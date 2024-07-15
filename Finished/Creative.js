@@ -1,0 +1,1 @@
+Chat.say("/gamemode creative");
