@@ -1,5 +1,5 @@
 /*
-Script to harvest a square potato field, and compact the result. You might need to adjust const and compactor placement to be able to use it.
+Script to harvest a square wart field, and compact the result. You might need to adjust const and compactor placement to be able to use it.
 V1.3 by arthirob 15/07/2024
 
 Things to improve
