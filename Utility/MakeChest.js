@@ -1,7 +1,7 @@
 //This script allows to craft stacks of logs into chests. You need to be in front of a crafting bench for it to work, with enough inventory space
-const numberOfLog = 4; //The number of logs you want to turn into chest
+const numberOfLog = 4; //The number of logs stacks you want to turn into chest
 const p = Player.getPlayer() ;
-const logType = "oak"
+const woodType = "oak"
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
 
@@ -11,13 +11,19 @@ if ((36-inv.getItems('main', 'hotbar', 'offhand').length-3*numberOfLog)<1) {//Ea
     throw("Not enough inventory space");
 }
 //Check if you have enough logs
-const blockType = "minecraft:"+logType;
-var logList = inv.findItem((blockType+"_log"));
-if (logList.length<numberOfLog) {
-    throw("You need at least "+numberOfLog+" stacks of logs. This value can be edited");
+const logType = "minecraft:"+woodType+"_log";
+const itemMap = inv.getItemCount();
+for (const [key,value] of itemMap) {
+    if (key==logType) {
+        if (value<(64*numberOfLog)) {
+            throw("You need at least "+numberOfLog+" stacks of logs. This value can be edited")
+        }
+    }
 }
+
+//Open the crafting table
 p.interact();
-Client.waitTick();
+Client.waitTick(5);
 
 //Check if you are in a crafting table
 inv = Player.openInventory();
@@ -25,10 +31,10 @@ inv = Player.openInventory();
 if (inv.getType()!="Crafting Table") {
     throw("You need to face a crafting table");
 }
-logList = inv.findItem((blockType+"_log")); //The slot needs to be calculated again after the crafting bench is open
+const logList = inv.findItem(logType); //The slot needs to be calculated again after the crafting bench is open
 
 //Craft the planks
-for (let i=0;i<numberOfLog;i++) {
+for (let i=0;i<logList.length;i++) {
     inv.swap(logList[i],1);
     Client.waitTick();
     inv.quick(0);
@@ -36,7 +42,8 @@ for (let i=0;i<numberOfLog;i++) {
 }
 
 //Craft the chests
-var plankList = inv.findItem((blockType+"_planks"));
+const plankType = "minecraft:"+woodType+"_planks";
+var plankList = inv.findItem(plankType);
 if (plankList.length<8) {
     throw("Not enough planks")
 }
@@ -48,6 +55,3 @@ for (let i=0;i<(plankList.length/8);i++) {
     inv.quick(0);
     Client.waitTick();
 }
-
-Client.waitTick(10);
-Client.waitTick();
