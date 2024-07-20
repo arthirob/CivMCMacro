@@ -4,7 +4,6 @@ const p = Player.getPlayer() ;
 const logType = "oak"
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
-const lagTick = 2;
 
 
 //Check if you have enough inventory room
@@ -18,7 +17,7 @@ if (logList.length<numberOfLog) {
     throw("You need at least "+numberOfLog+" stacks of logs. This value can be edited");
 }
 p.interact();
-Client.waitTick(lagTick);
+Client.waitTick();
 
 //Check if you are in a crafting table
 inv = Player.openInventory();
@@ -31,9 +30,9 @@ logList = inv.findItem((blockType+"_log")); //The slot needs to be calculated ag
 //Craft the planks
 for (let i=0;i<numberOfLog;i++) {
     inv.swap(logList[i],1);
-    Client.waitTick(lagTick);
+    Client.waitTick();
     inv.quick(0);
-    Client.waitTick(lagTick);
+    Client.waitTick();
 }
 
 //Craft the chests
