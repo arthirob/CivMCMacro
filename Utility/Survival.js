@@ -1,2 +1,2 @@
 Chat.say("/gamemode survival");
-Chat.say("/gamerule randomTickSpeed 3")
+Chat.say("/gamerule randomTickSpeed 0")

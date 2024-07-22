@@ -8,37 +8,41 @@ All tree with the same distance, all rows with the same distance. The distance t
 
 Things to improve
 Repair the toolSwitchFunction
+Make a variable to choose the wood type
 */
 
 
 // Variable and constant declaration
 
+//JS Macro stuff, no touching
 const p = Player.getPlayer() ;
 const im = Player.getInteractionManager();
 const inv = Player.openInventory();
 
-const toDump = ["minecraft:spruce_sapling","minecraft:spruce_log","minecraft:stripped_spruce_log","minecraft:spruce_leaves","minecraft:stick"];
-
-const xEast = 6375;
-const xWest = 6326;
-const zNorth = -6279;
-const zSouth = -6125;
-const firstLevel = 94;
-const fastMode = true; //Switch to true for faster harvest. Will consume more shears
-const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
-
+//Farm borders and properties
+const xEast = 6375; //Easter row
+const xWest = 6326; // Western row
+const zNorth = -6279; // North limit
+const zSouth = -6125; // South limit
+const firstLevel = 94; //First level of the farm
 const farmNumberLevel = 4; //Number of farm level
 const rowSpace = 7; //Space between rows
 const treeSpace = 7; //Space between trees in a row
 const levelSpace = 10; //Space between two levels
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
+const toDump = ["minecraft:spruce_sapling","minecraft:spruce_log","minecraft:stripped_spruce_log","minecraft:spruce_leaves","minecraft:stick"]; //The things that's getting throw in the water
+const fastMode = true; //Switch to true for faster harvest. Will consume more shears
+const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
+var wait = 2; //This allows to use shears instead of the axe when cutting leaves. Reduce to 2 if you have good connection, 4 for bad
 var breakTime;
-var wait = 4; //This allows to use shears instead of the axe when cutting leaves
+
+//Information to send the message in a discord relay
 const discordGroup = 'FU-Bot';
 const farmName = "Spruce tree farm in farmingrad"
 const regrowTime = 12;
 
+//Variable of the script, no touchingas well
 var currentRow; //Current row, in Z cords
 var currentX; //X at the start of the script
 var currentZ; //Z at the start of the script
