@@ -1,7 +1,7 @@
 //This script allows to craft stacks of logs into chests. You need to be in front of a crafting bench for it to work, with enough inventory space
-const numberOfLog = 4; //The number of logs stacks you want to turn into chest
+const numberOfLog = 2; //The number of logs stacks you want to turn into chest
 const p = Player.getPlayer() ;
-const woodType = "oak"
+const woodType = "spruce"
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
 
@@ -13,12 +13,17 @@ if ((36-inv.getItems('main', 'hotbar', 'offhand').length-3*numberOfLog)<1) {//Ea
 //Check if you have enough logs
 const logType = "minecraft:"+woodType+"_log";
 const itemMap = inv.getItemCount();
+var foundLog = false;
 for (const [key,value] of itemMap) {
     if (key==logType) {
+        foundLog = true ;
         if (value<(64*numberOfLog)) {
             throw("You need at least "+numberOfLog+" stacks of logs. This value can be edited")
         }
     }
+}
+if (!foundLog) {
+    throw("You forgot to took any log !")
 }
 
 //Open the crafting table
@@ -34,24 +39,41 @@ if (inv.getType()!="Crafting Table") {
 const logList = inv.findItem(logType); //The slot needs to be calculated again after the crafting bench is open
 
 //Craft the planks
-for (let i=0;i<logList.length;i++) {
+for (let i=0;i<numberOfLog;i++) {
     inv.swap(logList[i],1);
     Client.waitTick();
     inv.quick(0);
     Client.waitTick();
 }
 
-//Craft the chests
+Client.waitTick(5);
+// Get the list of full stacks of planks
 const plankType = "minecraft:"+woodType+"_planks";
-var plankList = inv.findItem(plankType);
+var plankList = [];
+const slots = inv.getSlots('main', 'hotbar', 'offhand');
+for (const slot of slots) {
+    const item = inv.getSlot(slot);
+    if (item.getItemId() == plankType) {
+        if (item.getCount()==64) {
+            plankList.push(slot);
+        }
+    }
+}
+
+//This shouldn't happen
 if (plankList.length<8) {
     throw("Not enough planks")
 }
 
-for (let i=0;i<(plankList.length/8);i++) {
+Chat.log(plankList.length)
+//Craft the chests
+/*
+for (let i=0;i<=((plankList.length/8)-1);i++) {
     for (let j=0;j<8;j++){
-        inv.swap(plankList[j+i*8],chestRecipe[j]);
+        Time.sleep(10);
+        inv.swap(plankList[(j+i*8)],chestRecipe[j]);
     }
     inv.quick(0);
     Client.waitTick();
 }
+*/

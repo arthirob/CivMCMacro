@@ -1,5 +1,5 @@
 /*Script to harvest a tree farm, and replant
-V1.2 by arthirob, 22/07/2024 
+V1.3 by arthirob, 27/07/2024 
 
 Conditions for the farm as as follow
 A compactor a placed in the north wall, with a lever on the furnace
@@ -7,8 +7,6 @@ An odd number of row
 All tree with the same distance, all rows with the same distance. The distance to the first tree is the same as the distance to the other tree
 
 Things to improve
-Repair the toolSwitchFunction
-Make a variable to choose the wood type
 */
 
 
@@ -29,9 +27,10 @@ const farmNumberLevel = 4; //Number of farm level
 const rowSpace = 7; //Space between rows
 const treeSpace = 7; //Space between trees in a row
 const levelSpace = 10; //Space between two levels
+const woodType = "spruce"
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const toDump = ["minecraft:spruce_sapling","minecraft:spruce_log","minecraft:stripped_spruce_log","minecraft:spruce_leaves","minecraft:stick"]; //The things that's getting throw in the water
+const toDump = [`minecraft:${woodType}_sapling`,`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
 const fastMode = true; //Switch to true for faster harvest. Will consume more shears
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 var wait = 2; //This allows to use shears instead of the axe when cutting leaves. Reduce to 2 if you have good connection, 4 for bad
@@ -42,7 +41,7 @@ const discordGroup = 'FU-Bot';
 const farmName = "Spruce tree farm in farmingrad"
 const regrowTime = 12;
 
-//Variable of the script, no touchingas well
+//Variable of the script, no touching as well
 var currentRow; //Current row, in Z cords
 var currentX; //X at the start of the script
 var currentZ; //Z at the start of the script
@@ -50,6 +49,9 @@ var currentY; //Y at the start of the script
 var dir; // 1 for north, 0 for south
 var prevZ ;
 var stuck ; //Check if you are stuck in a tree
+var toolList ; //The list of tools that could be used
+var lowestToolDamage ; //The lowest health of the tool used
+var currentToolDamage ; // The health of the tool when looping the inv
 
 
 const startTime = Date.now();
@@ -59,6 +61,7 @@ function eat() {
     if (p.getFoodLevel()<16) {
         const foodList = inv.findItem(foodType);
         if (foodList.length==0) {
+            Chat.log("You are out of food")
             throw("Out of food")
         }
         inv.swapHotbar(foodList[0],2);
@@ -111,20 +114,31 @@ function disableCtb() {
     }
 }
 
-function toolSwitch(){ //This is to be corrected... For some reasons, maths don't check with the wiki
-    if (((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold)||(inv.getSlot(36).getItemId()!="minecraft:diamond_axe")) { // If you first tool isn't usable, switch it
-        const toolList = inv.findItem("minecraft:diamond_axe")
-        var usableSlot = 0;
-        for (i=0;i<toolList.length;i++) { // This needs to be correct as well, it's not really efficient to check all tools
-            if ((inv.getSlot(toolList[i]).getMaxDamage()-inv.getSlot(toolList[i]).getDamage())>=damageTreshhold) {// The tool has health remaining
-                usableSlot = toolList[i];
-            } 
-        }
-        if (usableSlot==0) {
-            throw("No more tools to use")
-        }
-        inv.swapHotbar(usableSlot,0);
+function toolCheck() { // Check if your tool can be used, and if not, switch it
+    if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
+        toolSwitch();
     }
+}
+
+function toolSwitch(){ //Function to switch to the lowest durability axe still usable
+    toolList = inv.findItem("minecraft:diamond_axe")  
+    var usableSlot = 0;
+    lowestToolDamage = 10000 ;
+    for (i=0;i<toolList.length;i++) { // This needs to be correct as well, it's not really efficient to check all tools
+        currentToolDamage = inv.getSlot(toolList[i]).getMaxDamage()-inv.getSlot(toolList[i]).getDamage() 
+        if (currentToolDamage>=damageTreshhold) { // The tool has health remaining
+            if (currentToolDamage<lowestToolDamage) {
+                usableSlot = toolList[i];
+                lowestToolDamage = currentToolDamage;
+            }
+            
+        } 
+    }
+    if (usableSlot==0) {
+        Chat.log("You are out of tools")
+        throw("No more tools to use")
+    }
+    inv.swapHotbar(usableSlot,0);
     var effBonus = 0; //Bonus given by efficiency
     const axe = inv.getSlot(36);
     const enchantHelper = axe.getEnchantment("Efficiency");
@@ -197,6 +211,7 @@ function reachLog(z,dir) { // Break the leaves to reach the log
 function shearsSwitch() {
     const shearList = inv.findItem("minecraft:shears");
     if (shearList.length==0) {
+        Chat.log("You are out of shears");
         throw("Out of shears")
     }
     inv.swapHotbar(inv.findItem("minecraft:shears")[0],3);//Take a new one
@@ -253,7 +268,7 @@ function harvestLog(z,dir){ // When in front of a tree,cut 2 logs, walk forward 
     plantedSapling+=1;
     //Client.waitTick(2);
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
-        toolSwitch();
+        toolCheck();
     }
 }
 
