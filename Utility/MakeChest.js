@@ -1,7 +1,7 @@
 //This script allows to craft stacks of logs into chests. You need to be in front of a crafting bench for it to work, with enough inventory space
-const numberOfLog = 2; //The number of logs stacks you want to turn into chest
+const numberOfLog = 4; //The number of logs stacks you want to turn into chest
 const p = Player.getPlayer() ;
-const woodType = "spruce"
+const woodType = "jungle"
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
 
@@ -65,9 +65,8 @@ if (plankList.length<8) {
     throw("Not enough planks")
 }
 
-Chat.log(plankList.length)
 //Craft the chests
-/*
+
 for (let i=0;i<=((plankList.length/8)-1);i++) {
     for (let j=0;j<8;j++){
         Time.sleep(10);
@@ -76,4 +75,3 @@ for (let i=0;i<=((plankList.length/8)-1);i++) {
     inv.quick(0);
     Client.waitTick();
 }
-*/
