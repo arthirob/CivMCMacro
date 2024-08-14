@@ -161,7 +161,7 @@ function dumpSpruce() //Throw the spruce in the water, keep up to 10 stacks of s
     let saplingCount = 0; // Keep some saplings
     for (let i = 9; i < 45 ; i++)    {
         if (toDump.includes(inv.getSlot(i).getItemID())) {
-            if (inv.getSlot(i).getItemID() == "minecraft:spruce_sapling") {
+            if (inv.getSlot(i).getItemID() == `minecraft:${woodType}_sapling`) {
                 {
                     if (saplingCount>10) {
                         inv.dropSlot(i,true);
@@ -264,7 +264,7 @@ function harvestLog(z,dir){ // When in front of a tree,cut 2 logs, walk forward 
     p.lookAt(dir*180,90);
     Client.waitTick(2);
     inv.setSelectedHotbarSlotIndex(1);
-    placeFill("minecraft:spruce_sapling");
+    placeFill(`minecraft:${woodType}_sapling`);
     plantedSapling+=1;
     //Client.waitTick(2);
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
@@ -338,7 +338,7 @@ function start() { //Allows to start back where you were. Finish the row, and pl
                 if (((currentZ-zNorth)%treeSpace)==0) {
                 dir = (Math.floor((p.getYaw()+450)/180))%2; //The 450 is too get a positive yaw
                 //Now prepare the hotbar
-                saplingList = inv.findItem("minecraft:spruce_sapling");
+                saplingList = inv.findItem(`minecraft:${woodType}_sapling`);
                 var totalSapling = 0;
                 for (let i=0;i<saplingList.length;i++) {
                     totalSapling += inv.getSlot(saplingList[i]).getCount();
