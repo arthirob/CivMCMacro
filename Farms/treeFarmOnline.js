@@ -7,6 +7,7 @@ An odd number of row
 All tree with the same distance, all rows with the same distance. The distance to the first tree is the same as the distance to the other tree
 
 Things to improve
+Repair the dump spruce so it don't fall on a block
 */
 
 
@@ -28,6 +29,7 @@ const rowSpace = 7; //Space between rows
 const treeSpace = 7; //Space between trees in a row
 const levelSpace = 10; //Space between two levels
 const woodType = "spruce"
+const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
 const toDump = [`minecraft:${woodType}_sapling`,`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
@@ -68,7 +70,7 @@ function eat() {
         KeyBind.keyBind("key.use", true);
         inv.setSelectedHotbarSlotIndex(2);
         do {
-            Client.waitTick(10);
+            Client.waitTick(lagTick);
         } while (p.getFoodLevel()<16)
         inv.setSelectedHotbarSlotIndex(0);
         KeyBind.keyBind("key.use", false);
@@ -77,7 +79,7 @@ function eat() {
 
 function placeFill(item) {
     im.interact();
-    Client.waitTick(2);
+    Client.waitTick();
     if (inv.findFreeHotbarSlot()==37) { //2nd slot = saplings slot is empty
         list = inv.findItem(item);
         if (list.length==0) {
@@ -107,7 +109,7 @@ function walkTo(x, z) { // Walk to the center of a block
 
 function disableCtb() {
     Chat.say("/ctb");
-    Client.waitTick(10);
+    Client.waitTick(lagTick);
     var textis = Chat.getHistory().getRecvLine(0).getText().getString();
     if (Chat.getHistory().getRecvLine(0).getText().getString() == "Bypass mode has been enabled. You will be able to break reinforced blocks if you are on the group.") { // You hav ctb activating
         Chat.say("/ctb");
@@ -146,18 +148,16 @@ function toolSwitch(){ //Function to switch to the lowest durability axe still u
         effBonus = (enchantHelper.getLevel())**2+1;
     }
     var damage = (8+effBonus)/60 // See breaking calculation for details, assuming diamond axe
-    breakTime = Math.ceil(1/damage)+8 // Needs correction I guess...;
+    breakTime = Math.ceil(1/damage)+6 // Needs correction I guess...;
 }
 
 function dumpSpruce() //Throw the spruce in the water, keep up to 10 stacks of saplings
 {
     //Clear the leaves
-    p.lookAt((xEast+xWest)/2,p.getY()+1.8,p.getZ());
+    p.lookAt((xEast+xWest)/2,p.getY()-2,p.getZ());
     KeyBind.keyBind("key.attack", true);
     Client.waitTick(30);
     KeyBind.keyBind("key.attack", false);
-
-
     let saplingCount = 0; // Keep some saplings
     for (let i = 9; i < 45 ; i++)    {
         if (toDump.includes(inv.getSlot(i).getItemID())) {
@@ -187,20 +187,16 @@ function reachLog(z,dir) { // Break the leaves to reach the log
         inv.setSelectedHotbarSlotIndex(3);
         KeyBind.keyBind("key.sprint", true);
         Client.waitTick();
-        KeyBind.keyBind("key.sprint", false);
-        
+        KeyBind.keyBind("key.sprint", false);   
     } else {
         inv.setSelectedHotbarSlotIndex(2); // Select slot 3, not the tool, not the saplings
-    }
-    
-    
-    
+    }   
     while (Math.floor(p.getZ())!=(z-1+dir*2)){
         prevZ = p.getZ();
         Client.waitTick(2);
         if (Math.abs((p.getZ()-prevZ))<0.1) { // This allows to wait if you bump into leaves, to prevent lag
             KeyBind.keyBind("key.forward", false);
-            Client.waitTick(15);
+            Client.waitTick(lagTick);
             KeyBind.keyBind("key.forward", true);
         }
     }
@@ -228,7 +224,7 @@ function sortLeaves() {
         KeyBind.keyBind("key.attack",true);
         Client.waitTick(breakTime);
         KeyBind.keyBind("key.attack",false);
-        Client.waitTick(2);
+        Client.waitTick();
         if (inv.findFreeHotbarSlot()==39) { //The shears are broken
             shearsSwitch();
         }
@@ -262,11 +258,9 @@ function harvestLog(z,dir){ // When in front of a tree,cut 2 logs, walk forward 
     KeyBind.keyBind("key.attack",false);
     sortLeaves();
     p.lookAt(dir*180,90);
-    Client.waitTick(2);
     inv.setSelectedHotbarSlotIndex(1);
     placeFill(`minecraft:${woodType}_sapling`);
     plantedSapling+=1;
-    //Client.waitTick(2);
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
         toolCheck();
     }
@@ -277,11 +271,14 @@ function farmLine(dir){ // Farm a line in a specified direction
     var nextLog = (Math.floor(p.getZ())+(treeSpace*(1-dir)-treeSpace*dir));//Next log coords
     while ((nextLog !=zNorth)&&(nextLog!=zSouth)) {
         reachLog(nextLog,dir); //Reach the next log
-        Client.waitTick(10); // To prevent lag
+        Client.waitTick(lagTick); // To prevent lag
         harvestLog(nextLog,dir);//Harvest the log
+        if (nextLog == (zNorth+zSouth)/2) {
+            Chat.log("Dumping there");
+            dumpSpruce();
+        }
         nextLog+=treeSpace*(1-dir)-treeSpace*dir;
     }
-    dumpSpruce();
     eat();
     reachLog(nextLog+1-2*dir,dir); //Allows to break the leaves if we are stuck on last tree
 }
@@ -310,11 +307,11 @@ function farmMain(currentX,currentZ,dir) { //Farm all the levels
         Chat.log("Starting level "+currentY);
         farmLevel(currentX,currentZ,dir);
         walkTo(xWest,zNorth);// Go to the lodestone
-        Client.waitTick(10);// Wait
+        Client.waitTick(lagTick);// Wait
         KeyBind.keyBind("key.jump",true);
-        Client.waitTick(5);
+        Client.waitTick(3);
         KeyBind.keyBind("key.jump",false);
-        Client.waitTick(10);
+        Client.waitTick(lagTick);
         dir = 0;
       }
     const farmTime = Math.floor((Date.now()-startTime)/1000);

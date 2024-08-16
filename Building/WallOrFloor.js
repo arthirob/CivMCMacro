@@ -1,10 +1,10 @@
 // Script to make a wall or a floor
 // To make the floor, start on the north west corner, and choose where to stop by placing zSouth and Xeast value, and look torward the east. The hotbar should have the item you want to use in the first slot, and the rest of the hotbar shouldn't contain the item
 
-const xEast = -6;
-const xWest = -14;
-const zNorth = -1;
-const zSouth = 8;
+const xEast = 6582;
+const xWest = 6550;
+const zNorth = -4445;
+const zSouth = -4427;
 
 const p = Player.getPlayer() ;
 const inv = Player.openInventory();
@@ -26,27 +26,30 @@ function jump() {
     p.interact();
 }
 
-function placeFill(item) {
+function placeFill(item,i) { //Autofill the i slot
     p.interact();
-            if (inv.findFreeHotbarSlot()==36) { //First slot empty
-                list = inv.findItem(item);
-                Chat.log("Listlength"+list.length);
-                if (list.length==0) {
-                    KeyBind.keyBind("key.sneak", false);
-                    KeyBind.keyBind("key.back", false);
-                    KeyBind.keyBind("key.forward", true);
-                    Client.waitTick(3);
-                    KeyBind.keyBind("key.forward", false);
-                    Chat.log("Out of materials")
-                    throw("No more mats")
-                }
-                inv.quick(list[0]);
-            }
+    Client.waitTick();
+    if (inv.getSlot(36+i).getCount()==0) { //i slot empty
+        list = inv.findItem(item);
+        if (list.length==0) {
+            KeyBind.keyBind("key.back", false);
+            KeyBind.keyBind("key.left", false);
+            KeyBind.keyBind("key.forward", true);
+            Client.waitTick(3);
+            KeyBind.keyBind("key.forward", false);
+            KeyBind.keyBind("key.sneak", false);
+            Chat.log("Out of materials")
+            throw("No more mats")
+        }
+        inv.swapHotbar(list[0],i);
+        Client.waitTick();
+    }
 }
 
 function lineX(item) {
     dir = (Math.floor((p.getYaw()+45)/90))*90;
     p.lookAt(dir,80);
+    Chat.log("looked")
     KeyBind.keyBind("key.sneak", true);
     KeyBind.keyBind("key.back", true);
     var prevX =p.getX();
@@ -55,7 +58,7 @@ function lineX(item) {
 
         Client.waitTick();
         if (prevX==p.getX()) {
-            placeFill(item);
+            placeFill(item,0);
         }
     }
     KeyBind.keyBind("key.back", false);
@@ -89,7 +92,7 @@ function turn(item){
         Client.waitTick()
     }
     Client.waitTick(1);
-    placeFill(item);
+    placeFill(item,0);
     Client.waitTick(1)
     KeyBind.keyBind("key.back", false);
 }
