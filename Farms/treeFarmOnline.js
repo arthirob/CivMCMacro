@@ -151,10 +151,14 @@ function toolSwitch(){ //Function to switch to the lowest durability axe still u
     breakTime = Math.ceil(1/damage)+6 // Needs correction I guess...;
 }
 
-function dumpSpruce() //Throw the spruce in the water, keep up to 10 stacks of saplings
+function dumpWood() //Throw the wood in the water, keep up to 10 stacks of saplings
 {
     //Clear the leaves
-    p.lookAt((xEast+xWest)/2,p.getY()-2,p.getZ());
+    if (currentRow==xWest) {
+        p.lookAt(-160,40)
+    } else {
+        p.lookAt(160,40);
+    }
     KeyBind.keyBind("key.attack", true);
     Client.waitTick(30);
     KeyBind.keyBind("key.attack", false);
@@ -274,8 +278,7 @@ function farmLine(dir){ // Farm a line in a specified direction
         Client.waitTick(lagTick); // To prevent lag
         harvestLog(nextLog,dir);//Harvest the log
         if (nextLog == (zNorth+zSouth)/2) {
-            Chat.log("Dumping there");
-            dumpSpruce();
+            dumpWood();
         }
         nextLog+=treeSpace*(1-dir)-treeSpace*dir;
     }
