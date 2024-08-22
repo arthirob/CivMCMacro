@@ -262,6 +262,7 @@ function harvestLog(z,dir){ // When in front of a tree,cut 2 logs, walk forward 
     KeyBind.keyBind("key.attack",false);
     sortLeaves();
     p.lookAt(dir*180,90);
+    Client.waitTick(4); //Decreses the chances of skiping a sapling
     inv.setSelectedHotbarSlotIndex(1);
     placeFill(`minecraft:${woodType}_sapling`);
     plantedSapling+=1;
