@@ -32,6 +32,9 @@ const lodeStoneDistZ = 5; // The Z distance between the same lodestone in an oth
 const LodeStoneX = [1,0,+2,+3];
 const LodeStoneZ = [0,-2,-3,-1];
 
+const discordGroup = 'FU-Bot';
+const farmName = "Cocoa farm"
+const regrowTime = 24;
 
 
 var currentX; //X at a given moment
@@ -184,10 +187,15 @@ function farmAll() { // Harvest the whole farm
     while (currentLodestone[0]<quadrantEast) {
         farmLine();
     }
-    const farmTime = Math.floor((Date.now()-startTime)/1000);
-    Chat.log("Farm is finished to harvest in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
-    Chat.say("/logout")   
+    finishFarm();
 }
+
+function finishFarm() {
+    const farmTime = Math.floor((Date.now()-startTime)/1000);
+    Chat.say("/g "+discordGroup+" "+farmName+" is finished to harvest in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. It'll be ready again in "+regrowTime+" hours. Now logging out") 
+    Chat.say("/logout")
+}
+
 
 function checkPosition (x,y,z) { //Check if the player is in the farm at the good level
     if (y != yGround) {
