@@ -1,5 +1,5 @@
 /*Script to harvest a tree farm, and replant
-V1.5 by arthirob, 20/08/2024 
+V1.6 by arthirob, 20/09/2024 
 
 Conditions for the farm as as follow
 A compactor a placed in the north wall, with a lever on the furnace
