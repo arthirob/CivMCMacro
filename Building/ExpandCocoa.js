@@ -17,12 +17,15 @@ function jumpPlace() {
     p.lookAt(0,90)
     KeyBind.keyBind("key.jump", true);
     Client.waitTick(3);
-    placeFill(logType,0)
+    placeFill(0)
     KeyBind.keyBind("key.jump", false);
     Client.waitTick(3);
 }
 
-function placeFill(item,i) { //Autofill the i slot
+function placeFill(i) { //Autofill the i slot
+    item = inv.getSlot(36+i);
+    inv.setSelectedHotbarSlotIndex(i);
+    Client.waitTick();
     p.interact();
     Client.waitTick();
     if (inv.getSlot(36+i).getCount()==0) { //i slot empty
@@ -72,12 +75,12 @@ function placeTwoCocoa(i) { //is is between -1 and 3
     KeyBind.keyBind("key.sneak", true);
     KeyBind.keyBind("key.back", true);
     Client.waitTick(longWait);
-    placeFill(cocoaBean,1);
+    placeFill(1);
     Client.waitTick(smallWait);
     p.lookAt(90*i,78);
     KeyBind.keyBind("key.back", false);
     Client.waitTick(smallWait);
-    placeFill(cocoaBean,1);
+    placeFill(1);
     Client.waitTick(smallWait);
     KeyBind.keyBind("key.forward", true);
     Client.waitTick(smallWait)
@@ -88,7 +91,7 @@ function placeTwo(i){
     if (i==1) {
         p.lookAt(treeX,p.getY()-1.5,treeZ+0.5);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
         p.lookAt(treeX,p.getY()-0.5,treeZ+0.5);
         Client.waitTick(smallWait)
         placeFill(cocoaBean,1);
@@ -96,26 +99,26 @@ function placeTwo(i){
     if (i==2) {
         p.lookAt(treeX+0.5,p.getY()-1.5,treeZ);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
         p.lookAt(treeX+0.5,p.getY()-0.5,treeZ);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
     }
     if (i==3) {
         p.lookAt(treeX+1,p.getY()-1.5,treeZ+0.5);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
         p.lookAt(treeX+1,p.getY()-0.5,treeZ+0.5);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
     }
     if (i==4) {
         p.lookAt(treeX+0.5,p.getY()-1.5,treeZ+1);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
         p.lookAt(treeX+0.5,p.getY()-0.5,treeZ+1);
         Client.waitTick(smallWait)
-        placeFill(cocoaBean,1);
+        placeFill(1);
     }
 
 }

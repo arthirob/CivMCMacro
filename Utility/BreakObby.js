@@ -9,11 +9,9 @@ KeyBind.keyBind("key.attack", true);
 
 function finished() {
     if (p.getY()!=originalY) {
-        Chat.log("in if");
         let i=0;
         stillBelow = true;
         while ((i<5)&&stillBelow) {
-            Chat.log("i is "+i)
             Client.waitTick();
             if (p.getY()==originalY) {
                 stillBelow=false
