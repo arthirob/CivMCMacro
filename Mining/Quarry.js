@@ -1,5 +1,5 @@
 /*Script to dig a rectangle to bedrock
-V1.0 by arthirob, 30/06/2024 
+V1.1 by arthirob, 25/10/2024 
 
 Things to improve
 */
@@ -13,15 +13,18 @@ const im = Player.getInteractionManager();
 const inv = Player.openInventory();
 
 //What you should modify, your holes coordinate.
-const xWest = 60; // The X coordinate of your starting point
-const zSouth = -11; // The Z coordinate of your starting point
-const yStop = -63; // The y layer at which you want to stop
-const North = 5; // The number of block you want to dig to the north of the startpoint
-const East = 5; // The number of block you want to dig to the east of the startpoint
+const xWest = -32; // The X coordinate of your starting point
+const zSouth = -50; // The Z coordinate of your starting point
+const yStop = -55; // The y layer at which you want to stop
+const North = 28; // The number of block you want to dig to the north of the startpoint
+const East = 25; // The number of block you want to dig to the east of the startpoint
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
 const lagBreak = 7;//Add a little delay to compensate the lag. You can try to play with this one
 
+
+const torchGridX = 4; //The x distance between your torches
+const torchGridZ = 4; //The z distance between your torches
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const toolType = "pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
 const blockHardness = 1.5; // 1.5 for stone like, 0.5 for dirt like
@@ -35,6 +38,7 @@ var currentX; //X at the start of the script
 var currentZ; //Z at the start of the script
 var currentY; //Y at the start of the script
 var dir; // 1 for north, 0 for south
+var keepSolid;//The number of solid blocks stacks you want to keep
 var oldDir; //Store the old direction when you need to modify the dir variable (at the end of a line)
 var prevX ; //Allows to check if X changed
 var prevY ; //Allows to check if Y changed
@@ -53,11 +57,27 @@ function equip(item,slot) { // Equip an item in a certain slot
     Client.waitTick();
 }
 
-function placeFill(item) { //Place an item, and refill your inv if you have some left
+function placeFill(i) { //Autofill the i slot
+    item = inv.getSlot(36+i).getItemID();
+    inv.setSelectedHotbarSlotIndex(i);
+    Client.waitTick();
     p.interact();
-    Client.waitTick(2);
-    if (inv.findFreeHotbarSlot()==37) { //2nd slot
-        equip(item,1)
+    Client.waitTick();
+    if (inv.getSlot(36+i).getCount()==0) { //i slot empty
+        list = inv.findItem(item);
+        Chat.log(list.length);
+        if (list.length==0) {
+            KeyBind.keyBind("key.back", false);
+            KeyBind.keyBind("key.left", false);
+            KeyBind.keyBind("key.forward", true);
+            Client.waitTick(3);
+            KeyBind.keyBind("key.forward", false);
+            KeyBind.keyBind("key.sneak", false);
+            Chat.log("Out of materials")
+            throw("No more mats")
+        }
+        inv.swapHotbar(list[0],i);
+        Client.waitTick();
     }
 }
 
@@ -67,6 +87,14 @@ function lookAtCenter(x, z) {// Look at the center of a block
 
 function lookAtBlock(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+0.8, z+0.5);
+}
+
+function placeTorch(x,z){ // Place a torch if it follows the torch grid
+    if (((x-xWest)%torchGridX==0)&&((z-zSouth)%torchGridZ==0)) {
+        p.lookAt(x+0.5,p.getY(),z+0.5);
+        placeFill(2);
+        inv.setSelectedHotbarSlotIndex(0);  
+    }
 }
 
 function walkTo(x, z) { // Walk to the center of a block
@@ -106,13 +134,23 @@ function toolSwitch(){ //This is to be corrected... For some reasons, maths don'
     breakTime = Math.ceil(1/((8+effBonus)/(30*blockHardness)))+lagBreak //
 }
 
-function dumpBlock() { //Throw the useless blocks
+function dumpBlock() { //Throw the useless blocks, keep a few stacks of the item you need
     p.lookAt(xWest+East,p.getY()+1.5,zSouth-(North/2));
     Client.waitTick(3);
+    keepSolid = 0;
     for (let i = 9; i < 45 ; i++) {
-        if ((toDump.includes(inv.getSlot(i).getItemID()))&&(inv.getSlot(i).getItemID()!=solidBlock)){
-            inv.dropSlot(i,true)
-            Client.waitTick();
+        if (toDump.includes(inv.getSlot(i).getItemID())){
+            if ((inv.getSlot(i).getItemID()==solidBlock)) {
+                if ((keepSolid>5)&&(i!=37)) {
+                    inv.dropSlot(i,true)
+                    Client.waitTick();
+                } else {
+                    keepSolid++;
+                }
+            } else {
+                inv.dropSlot(i,true)
+                Client.waitTick();
+            }
         }
     }    
 }
@@ -158,6 +196,7 @@ function mineOne(x,z) { // Mine the block at this z value and walk to it
             stuck = 0
         }
     }
+    placeTorch(x,z);
 }
 
 function unstuck(x,z) { //If you are stuck, you are either hitting a block, or on the edge of a block
@@ -172,7 +211,7 @@ function unstuck(x,z) { //If you are stuck, you are either hitting a block, or o
         Client.waitTick(2);
         inv.setSelectedHotbarSlotIndex(1);
         Client.waitTick();
-        placeFill(solidBlock);
+        placeFill(1);
         p.lookAt(dir*180,35);
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(0);
@@ -229,6 +268,7 @@ function downLevel() { //Go down a level
     KeyBind.keyBind("key.forward", false);
     KeyBind.keyBind("key.sneak", false);
     Client.waitTick(15);
+    placeTorch(xWest,zSouth);
     if (prevY-1!=p.getY()) {
         throw("You are at the wrong height")
     }
@@ -257,6 +297,7 @@ function start() { //Allows to start back where you were. Finish the row, and pl
             toolSwitch();
             inv.setSelectedHotbarSlotIndex(0);
             equip(solidBlock,1);// Put the solid block in the second slot
+            equip("minecraft:torch",2);
             mineAll();
         } else {
             Chat.log("Please, start in the south west corner, and dig one block down");
