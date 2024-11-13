@@ -44,8 +44,8 @@ const foodType = "minecraft:baked_potato"; // Change the food to be whatever you
 var breakTime;
 
 //Information to send the message in a discord relay
-const discordGroup = 'Rivia';
-const farmName = "Spruce tree farm in Rivia"
+const discordGroup = 'hakr-bots';
+const farmName = "24 hour fitness"
 const regrowTime = 24;
 
 //Variable of the script, no touching as well
@@ -238,7 +238,7 @@ function reachLog(z) { // Break the leaves to reach the log. return true is a tr
 
 function shearsSwitch() {
     Chat.log("Starting function shearSwitch")
-    const shearList = inv.findItem("minecraft:diamond_hoe");
+    const shearList = inv.findItem("minecraft:shears");
     if (shearList.length==0) {
         Chat.log("You are out of shears");
         throw("Out of shears")
@@ -312,7 +312,7 @@ function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk fo
     KeyBind.keyBind("key.attack",false);
     sortLeaves();
     p.lookAt(dir*180,90);
-    Client.waitTick(2);
+    Client.waitTick(6);
     placeFill(1);
     plantedSapling+=1;
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
@@ -382,7 +382,7 @@ function farmLevel(currentX,currentZ) { // Farm your current level
     while (currentRow <= xEast) {
         farmLine();
         currentRow+=rowSpace;
-        if (currentRow<xEast) {
+        if (currentRow<=xEast) {
             walkTo(currentRow,zSouth*(1-dir)+zNorth*dir);
         }
         dir=(dir+1)%2
@@ -392,8 +392,9 @@ function farmLevel(currentX,currentZ) { // Farm your current level
 }
 
 function refillSapling(){
+    Client.waitTick(10); //Wait a long time, to make sure you are in the lodestone and not moving
     p.lookAt(lodestoneX+0.5,p.getY()+0.5,zNorth+1);
-
+    Client.waitTick(lagTick);
     const InvSlots = inv.getSlots('main', 'hotbar', 'offhand');
     let saplingCount = 0;
     let shearsCount = 0;
@@ -443,11 +444,9 @@ function farmMain(currentX,currentZ) { //Farm all the levels
         Chat.log("Starting level "+currentY);
         farmLevel(currentX,currentZ);
         walkTo(lodestoneX,lodeStoneZ);
-        p.lookAt(lodestoneX+0.2,p.getY(),lodeStoneZ+0.2);
-        inv.setSelectedHotbarSlotIndex(0);
-        Client.waitTick(lagTick);
-        p.interact();
-        Client.waitTick(lagTick);
+        KeyBind.keyBind("key.jump",true);
+        Client.waitTick(3);
+        KeyBind.keyBind("key.jump",false);
         refillSapling();
         dir = 0;
         walkTo(xWest,zNorth)
@@ -464,14 +463,14 @@ function start() { //Allows to start back where you were. Finish the row, and pl
     currentZ = Math.floor(p.getZ());
 
     //First check the position
-    if (((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth))||(currentX==originalXEast)) { // Check if you are inside the farm
+    if ((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth)) { // Check if you are inside the farm
         if (currentZ == zNorth) { // Correct the yaw if you are at the end of a row
             p.lookAt(0,0);
         }
         if (currentZ == zSouth) {
             p.lookAt(180,0);
         }
-        if ((((currentX-xWest)%rowSpace)==0)||(currentX==originalXEast)) { // Start in a row
+        if (((currentX-xWest)%rowSpace)==0) { // Start in a row
             if ((((currentZ-zNorth)%treeSpace)==(firstTreeDist%treeSpace))||(currentZ==zNorth)||(currentZ==zSouth)) {
                 dir = (Math.floor((p.getYaw()+450)/180))%2; //The 450 is too get a positive yaw
                 //Now prepare the hotbar
