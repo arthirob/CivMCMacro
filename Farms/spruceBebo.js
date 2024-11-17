@@ -1,5 +1,5 @@
-/*Script to harvest a tree farm, and replant. This version has lots of chat prompt for an easier debbuging, it'll ruin your chat history
-V1.7 by arthirob, 14/10/2024 
+/*Script to harvest a tree farm, and replant
+V1.5 by arthirob, 20/08/2024 
 
 Conditions for the farm as as follow
 A compactor a placed in the north wall, with a lever on the furnace
@@ -7,8 +7,7 @@ An odd number of row
 All tree with the same distance, all rows with the same distance. The distance to the first tree is the same as the distance to the other tree
 
 Things to improve
-Last layer, no saplings on lodestone tree
-Change level is fucked up
+Repair so it don't do last level 2 times
 */
 
 
@@ -17,78 +16,59 @@ Change level is fucked up
 //JS Macro stuff, no touching
 const p = Player.getPlayer() ;
 const im = Player.getInteractionManager();
-var inv = Player.openInventory();
+const inv = Player.openInventory();
 
 //Farm borders and properties
-var yLevelCorrector;
-
-yLevelCorrector = 3+(142-p.getY())/8
-
-const originalXEast = 5782;
-const originalXWest = 5687;
-var xEast = originalXEast - yLevelCorrector; //Easter row
-var xWest = originalXWest - yLevelCorrector; // Western row
-Chat.log(xEast);
-const zNorth = 1792; // North limit
-const zSouth = 1887; // South limit
-const firstLevel = 110; //First level of the farm
-const farmNumberLevel = 5; //Number of farm level
-const rowSpace = 5; //Space between rows
-const treeSpace = 5; //Space between trees in a row
-const levelSpace = 8; //Space between two levels
-const woodType = "oak"
+const xEast = 5368; //Easter row
+const xWest = 5319; // Western row
+const zNorth = -7399; // North limit
+const zSouth = -7245; // South limit
+const firstLevel = 177; //First level of the farm
+const farmNumberLevel = 4; //Number of farm level
+const rowSpace = 7; //Space between rows
+const treeSpace = 7; //Space between trees in a row
+const levelSpace = 10; //Space between two levels
+const woodType = "spruce"
 const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
-const runningPause = 10;// The amount of time you stop when bumping leaves
-const dumpSpot = 1837;
-const shearsNeeded = 4; //The amount of shears you have in hand
-const saplingStack = Math.floor(((xEast-xWest)/rowSpace)*((zSouth-zNorth)/treeSpace)/64)+2; //How many stack of sapling you need to run a level
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
-const fastMode = false; //Switch to true for faster harvest. Will consume more shears
+const toDump = [`minecraft:${woodType}_sapling`,`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
+const fastMode = true; //Switch to true for faster harvest. Will consume more shears
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
+var wait = 2; //This allows to use shears instead of the axe when cutting leaves. Reduce to 2 if you have good connection, 4 for bad
 var breakTime;
 
 //Information to send the message in a discord relay
-const discordGroup = 'Rivia';
-const farmName = "Spruce tree farm in Rivia"
-const regrowTime = 24;
+const discordGroup = 'FU-Bot';
+const farmName = "Spruce tree farm in farmingrad"
+const regrowTime = 12;
 
 //Variable of the script, no touching as well
 var currentRow; //Current row, in Z cords
 var currentX; //X at the start of the script
 var currentZ; //Z at the start of the script
 var currentY; //Y at the start of the script
-var dir; // 1 for north, 0 for south or -1 for facing east
+var dir; // 1 for north, 0 for south
 var prevZ ;
 var stuck ; //Check if you are stuck in a tree
 var toolList ; //The list of tools that could be used
 var lowestToolDamage ; //The lowest health of the tool used
 var currentToolDamage ; // The health of the tool when looping the inv
-var underLog ; //Boolean to check if you are under the logs
 
 
 const startTime = Date.now();
 var plantedSapling = 0;
 
-
-function equipFood() {
-    const foodList = inv.findItem(foodType);
-    if (foodList.length==0) {
-        Chat.log("You are out of food")
-        throw("Out of food")
-    }
-    inv.swapHotbar(foodList[0],2);
-}
-
 function eat() {
-    Chat.log("Starting function eat")
     if (p.getFoodLevel()<16) {
-        if (inv.getSlot(38).getItemId()!=foodType) {
-            equipFood();
+        const foodList = inv.findItem(foodType);
+        if (foodList.length==0) {
+            Chat.log("You are out of food")
+            throw("Out of food")
         }
-        inv.setSelectedHotbarSlotIndex(2);
+        inv.swapHotbar(foodList[0],2);
         KeyBind.keyBind("key.use", true);
+        inv.setSelectedHotbarSlotIndex(2);
         do {
             Client.waitTick(lagTick);
         } while (p.getFoodLevel()<16)
@@ -98,7 +78,6 @@ function eat() {
 }
 
 function placeFill(item) {
-    Chat.log("Starting function placeFill")
     im.interact();
     Client.waitTick();
     if (inv.findFreeHotbarSlot()==37) { //2nd slot = saplings slot is empty
@@ -117,7 +96,6 @@ function lookAtCenter(x, z) {// Look at the center of a block
 }
 
 function walkTo(x, z) { // Walk to the center of a block
-    Chat.log("Starting function walkTO")
     lookAtCenter(x,z);
     KeyBind.keyBind("key.forward", true);
     while ((Math.abs(p.getX() - x - 0.5) > 0.2 || Math.abs(p.getZ() - z - 0.5 ) > 0.2)){
@@ -139,16 +117,12 @@ function disableCtb() {
 }
 
 function toolCheck() { // Check if your tool can be used, and if not, switch it
-    Chat.log("Starting function toolcheck")
-
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
         toolSwitch();
     }
 }
 
 function toolSwitch(){ //Function to switch to the lowest durability axe still usable
-    Chat.log("Starting function toolswitch")
-
     toolList = inv.findItem("minecraft:diamond_axe")  
     var usableSlot = 0;
     lowestToolDamage = 10000 ;
@@ -179,8 +153,6 @@ function toolSwitch(){ //Function to switch to the lowest durability axe still u
 
 function dumpWood() //Throw the wood in the water, keep up to 10 stacks of saplings
 {
-    Chat.log("Starting function dumpWood")
-
     //Clear the leaves
     if (currentRow==xWest) {
         p.lookAt(-160,40)
@@ -193,36 +165,43 @@ function dumpWood() //Throw the wood in the water, keep up to 10 stacks of sapli
     let saplingCount = 0; // Keep some saplings
     for (let i = 9; i < 45 ; i++)    {
         if (toDump.includes(inv.getSlot(i).getItemID())) {
-            inv.dropSlot(i,true)
-        }
+            if (inv.getSlot(i).getItemID() == `minecraft:${woodType}_sapling`) {
+                {
+                    if (saplingCount>10) {
+                        inv.dropSlot(i,true);
+                        Client.waitTick();
+                    } else {
+                        saplingCount++;
+                    }
+                }
+            } else {
+                inv.dropSlot(i,true)
+            }
+    }
     }
     Client.waitTick();
     
 }
 
-function reachLog(z) { // Break the leaves to reach the log
-    Chat.log("Starting function reachLog with z value "+z);
-
+function reachLog(z,dir) { // Break the leaves to reach the log
     lookAtCenter(currentRow,z);
     KeyBind.keyBind("key.attack", true);
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick(runningPause);
     if (fastMode==true) {
         inv.setSelectedHotbarSlotIndex(3);
         KeyBind.keyBind("key.sprint", true);
         Client.waitTick();
-        KeyBind.keyBind("key.sprint", false);
+        KeyBind.keyBind("key.sprint", false);   
     } else {
         inv.setSelectedHotbarSlotIndex(2); // Select slot 3, not the tool, not the saplings
     }   
     while (Math.floor(p.getZ())!=(z-1+dir*2)){
         prevZ = p.getZ();
-        Client.waitTick();
+        Client.waitTick(2);
         if (Math.abs((p.getZ()-prevZ))<0.1) { // This allows to wait if you bump into leaves, to prevent lag
             KeyBind.keyBind("key.forward", false);
-            Client.waitTick(runningPause);
-            KeyBind.keyBind("key.forward", true);
             Client.waitTick(lagTick);
+            KeyBind.keyBind("key.forward", true);
         }
     }
     KeyBind.keyBind("key.forward", false);
@@ -230,65 +209,52 @@ function reachLog(z) { // Break the leaves to reach the log
 }
 
 function shearsSwitch() {
-    Chat.log("Starting function shearSwitch")
-    const shearList = inv.findItem("minecraft:shears");
+    shearList = inv.findItem("minecraft:shears")  
+    var usableSlot = 0;
+    lowestToolDamage = 10000 ;
+    for (i=0;i<shearList.length;i++) { // This needs to be correct as well, it's not really efficient to check all tools
+        currentToolDamage = inv.getSlot(shearList[i]).getMaxDamage()-inv.getSlot(shearList[i]).getDamage() 
+        if (currentToolDamage<lowestToolDamage) {
+            usableSlot = shearList[i];
+            lowestToolDamage = currentToolDamage;
+        }
+    }
     if (shearList.length==0) {
         Chat.log("You are out of shears");
         throw("Out of shears")
     }
-    inv.swapHotbar(shearList[0],3);//Take a new one
+    inv.swapHotbar(usableSlot,3);//Take a new one
 }
 
 
-function sortLeaves() { //Check if you cut leaves at some point. If yes, there's no more logs to cut
-    Chat.log("Starting function sort leaves")
-    originalDamage = inv.getSlot(39).getDamage()
-    leafTry = 0;
-    while ((originalDamage==inv.getSlot(39).getDamage())&&(leafTry<3)){
+function sortLeaves() {
+    for (let i=0;i<2;i++){
         inv.setSelectedHotbarSlotIndex(3);
-        Client.waitTick(lagTick);
+        Client.waitTick(wait);
         im.attack();
-        Client.waitTick(lagTick);
+        Client.waitTick(wait);
         inv.setSelectedHotbarSlotIndex(0);
         KeyBind.keyBind("key.attack",true);
         Client.waitTick(breakTime);
         KeyBind.keyBind("key.attack",false);
         Client.waitTick();
-        leafTry++;
         if (inv.findFreeHotbarSlot()==39) { //The shears are broken
             shearsSwitch();
         }
     }
 }
 
-function notUnderLog(coord,axisX) {//Return true if you are not under the log
-    if (axisX) {
-        return (Math.floor(p.getX())!=coord)
-    } else {
-        return (Math.floor(p.getZ())!=coord)
-    }
-}
-
-function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk forward and cut upward. If axisX is true, run along the x axis
-    Chat.log("Starting function harvest log")
-    if (axisX) {
-        p.lookAt(90+6,35) // If a tree isn't grown, the +6 avoid the glass pane
-    } else {
-        p.lookAt(dir*180+6,35) // If a tree isn't grown, the +6 avoid the glass pane
-    }
+function harvestLog(z,dir){ // When in front of a tree,cut 2 logs, walk forward and cut upward
+    p.lookAt(dir*180+6,35) // If a tree isn't grown, the +6 avoid the glass pane
     // Select slot 1 the tool   
     inv.setSelectedHotbarSlotIndex(0);
     KeyBind.keyBind("key.attack", true);
     Client.waitTick(breakTime*2); // Break the 2 bottom logs
     KeyBind.keyBind("key.attack", false);
     KeyBind.keyBind("key.forward", true);
-    if (axisX) {
-        p.lookAt(90,35) // If a tree isn't grown, the +6 avoid the glass pane
-    } else {
-        p.lookAt(dir*180,35) // If a tree isn't grown, the +6 avoid the glass pane
-    }
+    p.lookAt(dir*180+6,35)
     stuck = 0;
-    while (notUnderLog(coord,axisX)){ // Reach under the remaining logs
+    while (Math.floor(p.getZ())!=z){ // Reach under the remaining logs
         Client.waitTick();
         stuck+=1;
         if (stuck > 30) { // If you are stuck
@@ -301,11 +267,11 @@ function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk fo
     KeyBind.keyBind("key.forward", false);
     p.lookAt(dir*180,-90);
     KeyBind.keyBind("key.attack",true);
-    Client.waitTick(breakTime*2);
+    Client.waitTick(breakTime*3);
     KeyBind.keyBind("key.attack",false);
     sortLeaves();
     p.lookAt(dir*180,90);
-    Client.waitTick(5);
+    Client.waitTick();
     inv.setSelectedHotbarSlotIndex(1);
     placeFill(`minecraft:${woodType}_sapling`);
     plantedSapling+=1;
@@ -314,139 +280,52 @@ function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk fo
     }
 }
 
-function lineFinished() { // Return true if a line is finished, false otherwise
-    if (dir==1) {
-        return (currentZ ==zNorth)
-    } else {
-        return (currentZ == zSouth)
-    }
-}
 
-function farmLine(){ // Farm a line in a specified direction
-    Chat.log("Starting function farmline with row is "+currentRow);
-    currentZ = Math.floor(p.getZ());
-    while (!lineFinished()) {
-        var nextLog = (currentZ+treeSpace*(1-2*dir));//Next log coords
-        reachLog(nextLog); //Reach the next log
+function farmLine(dir){ // Farm a line in a specified direction
+    var nextLog = (Math.floor(p.getZ())+(treeSpace*(1-dir)-treeSpace*dir));//Next log coords
+    while ((nextLog !=zNorth)&&(nextLog!=zSouth)) {
+        reachLog(nextLog,dir); //Reach the next log
         Client.waitTick(lagTick); // To prevent lag
-        harvestLog(nextLog,false);//Harvest the log
-        if (nextLog == dumpSpot) {
+        harvestLog(nextLog,dir);//Harvest the log
+        if (nextLog == (zNorth+zSouth)/2) {
             dumpWood();
         }
-        currentZ = Math.floor(p.getZ());
-        }
+        nextLog+=treeSpace*(1-dir)-treeSpace*dir;
+    }
     eat();
+    reachLog(nextLog+1-2*dir,dir); //Allows to break the leaves if we are stuck on last tree
 }
 
-function changeLine(newLevel){ //Change the line you are in. If newLevel is set to true, you just started the level
-    Chat.log("Starting function changeline in line "+currentRow)
-    if (!newLevel) {
-        currentRow-=rowSpace;
-    }
-    //ReachLog function on the x axis
-    currentZ = Math.floor(p.getZ());
-    Chat.log("aiming for "+currentRow);
-    lookAtCenter(currentRow,currentZ);
-    KeyBind.keyBind("key.attack", true);
-    KeyBind.keyBind("key.forward", true);
-    inv.setSelectedHotbarSlotIndex(2); // Select slot 3, not the tool, not the saplings
-    while (p.getX()>(currentRow+1.5)) {
-        Client.waitTick();
-    }
-    Chat.log("cerise");
-    KeyBind.keyBind("key.attack", false);
-    KeyBind.keyBind("key.forward", false);
-    harvestLog(currentRow,true);
-    if (!newLevel) { //Change direction if you are not in a new level
-            dir=(dir+1)%2
-    } else {
-        Chat.log("in else")
-        currentRow = xEast;
-    }
-    Chat.log("New dir is "+dir);
-}
-
-function farmLevel(currentX,currentZ) { // Farm your current level
-    Chat.log("Starting function farmlevel")
-    //If you are on a lodestone, start the first row 
-    if (currentX==originalXEast) {//You are on the lodestone
-        currentRow = xEast;
-        changeLine(true);
-    } else {
-        currentRow = currentX;
-    }
-    while (currentRow >= xWest) {
-        farmLine();
-        if (currentRow>xWest) {
-            changeLine(false);
-        } else {
-            currentRow-=rowSpace; //Prevent infinite loops, cause you'd never see you are finished
-        }
+function farmLevel(currentX,currentZ,dir) { // Farm your current level
+    currentRow = currentX;// To improve, but I don't know enough about global/local variable declaration
+    while (currentRow < xEast) {
+        farmLine(dir);
+        currentRow+=rowSpace;
+        walkTo(currentRow,zSouth*(1-dir)+zNorth*dir);
+        dir=(dir+1)%2
       }
+    farmLine(dir);
+    dir=(dir+1)%2
     Chat.log("Level finished !")
 
 }
 
-function refillSapling(){
-    p.lookAt(originalXEast-0.5,p.getY(),zSouth+1.5);
-
-    const InvSlots = inv.getSlots('main', 'hotbar', 'offhand');
-    let saplingCount = 0;
-    let shearsCount = 0;
-    for (const slot of InvSlots) {
-            if (inv.getSlot(slot).getItemID() == `minecraft:${woodType}_sapling`) {
-                saplingCount+=inv.getSlot(slot).getCount();
-            }
-            if (inv.getSlot(slot).getItemID() == `minecraft:shears`) {
-                shearsCount++;
-            }
-    }
-    var neededStack = Math.floor(saplingStack-saplingCount/64);
-    Client.waitTick();
-    p.interact();
-    Client.waitTick(lagTick);
-    inv = Player.openInventory();
-    Client.waitTick(lagTick);
-    for (slot=0;slot<54;slot++) {
-        if (inv.getSlot(slot).getItemID() == `minecraft:${woodType}_sapling`) {
-            if (neededStack>0) {
-                inv.quick(slot);
-                neededStack--;
-                Client.waitTick();
-            }
-        }
-        if (inv.getSlot(slot).getItemID() == `minecraft:shears`) {
-            if (shearsCount<shearsNeeded) {
-                inv.quick(slot);
-                shearsCount++;
-                Client.waitTick();
-            }
-        }
-    }
-    Player.openInventory().close();    
-    Client.waitTick(lagTick);
-}
-
-function farmMain(currentX,currentZ) { //Farm all the levels
+function farmMain(currentX,currentZ,dir) { //Farm all the levels
     Chat.log("Starting main function")
     currentY = Math.floor(p.getY());
     for (i=currentY;i<=(firstLevel+levelSpace*(farmNumberLevel-1));i+=levelSpace) {
         currentX = Math.floor(p.getX());
         currentY = Math.floor(p.getY());
         currentZ = Math.floor(p.getZ());
-        Chat.log("Starting level "+currentY);
-        farmLevel(currentX,currentZ);
-        walkTo(originalXEast,zSouth);
-        p.lookAt(originalXEast+0.2,p.getY(),zSouth+0.2);
-        inv.setSelectedHotbarSlotIndex(0);
+        Chat.log("Starting level "+i);
+        farmLevel(currentX,currentZ,dir);
+        walkTo(xWest,zNorth);// Go to the lodestone
+        Client.waitTick(lagTick);// Wait
+        KeyBind.keyBind("key.jump",true);
+        Client.waitTick(3);
+        KeyBind.keyBind("key.jump",false);
         Client.waitTick(lagTick);
-        p.interact();
-        Client.waitTick(lagTick);
-        refillSapling();
-        dir = 1;
-        yLevelCorrector = 3+(142-p.getY())/8
-        xEast = originalXEast - yLevelCorrector; 
-        xWest = originalXWest - yLevelCorrector;
+        dir = 0;
       }
     const farmTime = Math.floor((Date.now()-startTime)/1000);
     Chat.log("Farm is finished to harvest. Choped "+plantedSapling+" trees in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
@@ -454,20 +333,18 @@ function farmMain(currentX,currentZ) { //Farm all the levels
 }
 
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
-    Chat.log("Starting function start")
-
     currentX = Math.floor(p.getX());
     currentZ = Math.floor(p.getZ());
 
     //First check the position
-    if (((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth))||(currentX==originalXEast)) { // Check if you are inside the farm
+    if ((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth)) { // Check if you are inside the farm
         if (currentZ == zNorth) { // Correct the yaw if you are at the end of a row
             p.lookAt(0,0);
         }
         if (currentZ == zSouth) {
             p.lookAt(180,0);
         }
-        if ((((currentX-xWest)%rowSpace)==0)||(currentX==originalXEast)) { // Start in a row
+        if (((currentX-xWest)%rowSpace)==0) { // Start in a row
                 if (((currentZ-zNorth)%treeSpace)==0) {
                 dir = (Math.floor((p.getYaw()+450)/180))%2; //The 450 is too get a positive yaw
                 //Now prepare the hotbar
@@ -482,8 +359,7 @@ function start() { //Allows to start back where you were. Finish the row, and pl
                 toolSwitch();
                 shearsSwitch();
                 disableCtb();
-                equipFood();
-                farmMain(currentX,currentZ);
+                farmMain(currentX,currentZ,dir);
             } else {
                 Chat.log("Start in a tree spot or at the end of the line")
             }
@@ -494,6 +370,5 @@ function start() { //Allows to start back where you were. Finish the row, and pl
         Chat.log("You are not in the farm, cannot proceed");
     }
 }
-
 
 start();
