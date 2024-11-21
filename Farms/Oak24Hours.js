@@ -430,6 +430,7 @@ function refillSapling(){
     }
     Player.openInventory().close();    
     Client.waitTick(lagTick);
+    inv = Player.openInventory();
 }
 
 
