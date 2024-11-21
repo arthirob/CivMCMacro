@@ -1,5 +1,5 @@
 /*Script to check the amount of crop you have for exp recipe and send them into a discord chat
-V1.0 by arthirob, 19/11/2024 
+V1.1 by arthirob, 21/11/2024 
 
 Things to improve
 */
@@ -11,7 +11,7 @@ var inv = Player.openInventory();
 const playerLocation = [5913,-6502]
 
 const chestPlacement = [[5912,77,-6501],[5912,78,-6501],[5912,79,-6501],[5912,80,-6501],[5912,77,-6502],[5912,78,-6502],[5912,79,-6502],[5912,80,-6502],[5912,77,-6504],[5912,78,-6504],[5912,79,-6504]]
-const expRecipe = [["minecraft:cocoa_beans",128,"Cocoa beans"],["minecraft:twisting_vines",64,"Blue vine"],["minecraft:glass_bottles",128,"Bottles"],["minecraft:nether_wart",64,"Netherwart"],["minecraft:red_mushrooms",32,"Red mushrooms"],["minecraft:carrot",128,"Carrots"],["minecraft:oak_sapling",32,"Oak saplings"],["minecraft:melon",128,"Melon"],["minecraft:kelp",64,"Kelp"],["minecraft:potato",256,"Potatoes"]]
+const expRecipe = [["minecraft:cocoa_beans",128,"Cocoa beans"],["minecraft:twisting_vines",64,"Blue vine"],["minecraft:glass_bottle",128,"Bottles"],["minecraft:nether_wart",64,"Netherwart"],["minecraft:red_mushrooms",32,"Red mushrooms"],["minecraft:carrot",128,"Carrots"],["minecraft:oak_sapling",32,"Oak saplings"],["minecraft:melon",128,"Melon"],["minecraft:kelp",64,"Kelp"],["minecraft:potato",256,"Potatoes"]]
 
 function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+1.5, z+0.5);
@@ -60,12 +60,21 @@ function mainCount() { //Count all the items in the chest
     return totalItemCount
 }
 
+function emojiRelay(int) {
+    if ((int == 1) || (int ==2)){
+        return (":orange_square: : "+int+" recipe")
+    } else {
+        return (":white_check_mark: : "+int+" recipe")
+
+    }
+}
+
 function chatRelay(totalItemCount) { //Relay in the chat what is needed
     for (let i=0;i<10;i++) {
         if (totalItemCount.containsKey(expRecipe[i][0])) {
-            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : "+Math.floor((totalItemCount.get(expRecipe[i][0])/expRecipe[i][1]))+ " recipes");
+            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : "+emojiRelay(Math.floor((totalItemCount.get(expRecipe[i][0])/expRecipe[i][1]))));
         } else {
-            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : 0 recipes");
+            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : :red_square: 0 recipes");
         }
         
     }
