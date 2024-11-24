@@ -3,10 +3,11 @@
 
 
 //Only edit those two variable, the rest don't touch
-const distSouth = 9; //The number of blocks you want to go south
-const distEast = 121;  //The number of blocks you want to go east
+const distSouth = 10; //The number of blocks you want to go south
+const distEast = 10;  //The number of blocks you want to go east
 const torchGridX = 6; //The x distance between your torches
 const torchGridZ = 6; //The z distance between your torches
+const speed = 1; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
 const p = Player.getPlayer() ;
@@ -100,7 +101,6 @@ function needLine(dir) { //Return true if you need to continue the line, false o
 }
 
 function lineX() {
-    Chat.log("line")
     dir = 90*Math.abs(p.getYaw())/p.getYaw();
     p.lookAt(dir,80);
     KeyBind.keyBind("key.sneak", true);
@@ -112,20 +112,19 @@ function lineX() {
         if (prevX==p.getX()) {
             placeFill(0);
             KeyBind.keyBind("key.sneak", false);
-            Client.waitTick(3)
+            Client.waitTick(5-2*speed)
             KeyBind.keyBind("key.sneak", true);
-            placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+			placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
         }
     }
     KeyBind.keyBind("key.back", false);
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick(4);
+    Client.waitTick(8-4*speed);
     KeyBind.keyBind("key.forward", false);
 
 }
 
 function turn(){
-    Chat.log("turn")
     p.lookAt(180,80)
     KeyBind.keyBind("key.sneak", true);
     KeyBind.keyBind("key.back", true);
@@ -134,18 +133,18 @@ function turn(){
     while (prevZ != p.getZ()) {
         prevZ = p.getZ();
         Client.waitTick()
-        
+		
     }
     Client.waitTick(1);
     placeFill(0);
-    placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+	placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
     Client.waitTick(1)
     KeyBind.keyBind("key.back", false);
 }
 
 function Floor(){
     p.lookAt(90,0);
-    equip("minecraft:torch",2);
+	equip("minecraft:torch",2);
     while ((p.getZ()<zSouth)) {
         lineX();
         turn();
