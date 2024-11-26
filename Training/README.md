@@ -10,3 +10,17 @@ In this folder, you'll find a proposition of a way to resolve all the challenges
 
 ## I have no idea how to do any of this
 Feel free to ask to arthirob#1530 (they/neutral) on discord. They love to teach other people ! :)
+
+# List of challenges
+## First part
+### Challenge 1 
+Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script
+
+### Challenge 2
+Start from the green concrete, reach the red concrete but look at the north. You are allowed to check the red concrete coordinate before starting the script
+
+### Challenge 3
+Start from the green concrete, reach the red concrete, keep looking at the center of the blue concrete. Stay in the orange line. You are allowed to check the red and blue concrete coordinate before starting the script
+
+### Challenge 4
+Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about purple concrete

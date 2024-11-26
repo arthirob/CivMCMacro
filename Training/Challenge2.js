@@ -1,10 +1,10 @@
 const redConcreteX = 6483;
 const p = Player.getPlayer() ;
 
-
-KeyBind.keyBind("key.forward",true)
+p.lookAt(180,0)
+KeyBind.keyBind("key.right",true)
 while (p.getX()<redConcreteX) {
     Client.waitTick();
 }
-KeyBind.keyBind("key.forward",false)
+KeyBind.keyBind("key.right",false)
 Chat.log("Script over");
