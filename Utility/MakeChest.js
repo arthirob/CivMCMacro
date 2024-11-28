@@ -1,7 +1,7 @@
 //This script allows to craft stacks of logs into chests. You need to be in front of a crafting bench for it to work, with enough inventory space
 const numberOfLog = 4; //The number of logs stacks you want to turn into chest
 const p = Player.getPlayer() ;
-const woodType = "oak"
+const woodType = "spruce"
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
 
@@ -10,6 +10,7 @@ var inv = Player.openInventory();
 if ((36-inv.getItems('main', 'hotbar', 'offhand').length-3*numberOfLog)<1) {//Each stacks of log is going to take 3 more spot when turned into planks
     throw("Not enough inventory space");
 }
+
 //Check if you have enough logs
 const logType = "minecraft:"+woodType+"_log";
 const itemMap = inv.getItemCount();
@@ -22,6 +23,7 @@ for (const [key,value] of itemMap) {
         }
     }
 }
+
 if (!foundLog) {
     throw("You forgot to took any log !")
 }
@@ -57,7 +59,8 @@ for (const slot of slots) {
         if (item.getCount()==64) {
             plankList.push(slot);
         }
-    }
+    };
+
 }
 
 //This shouldn't happen
