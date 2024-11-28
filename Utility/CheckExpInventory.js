@@ -1,5 +1,5 @@
 /*Script to check the amount of crop you have for exp recipe and send them into a discord chat
-V1.2 by arthirob, 22/11/2024 
+V1.2 by arthirob and Zalvvv, 28/11/2024 
 
 Things to improve
 */
@@ -11,7 +11,11 @@ var inv = Player.openInventory();
 const playerLocation = [5913,-6502]
 
 const chestPlacement = [[5912,77,-6501],[5912,78,-6501],[5912,79,-6501],[5912,80,-6501],[5912,77,-6502],[5912,78,-6502],[5912,79,-6502],[5912,80,-6502],[5912,77,-6504],[5912,78,-6504],[5912,79,-6504]]
-const expRecipe = [["minecraft:cocoa_beans",128,"Cocoa beans"],["minecraft:twisting_vines",64,"Blue vine"],["minecraft:glass_bottle",128,"Bottles"],["minecraft:nether_wart",64,"Netherwart"],["minecraft:red_mushroom",32,"Red mushrooms"],["minecraft:carrot",128,"Carrots"],["minecraft:oak_sapling",32,"Oak saplings"],["minecraft:melon",128,"Melon"],["minecraft:kelp",64,"Kelp"],["minecraft:potato",256,"Potatoes"]]
+const expRecipe = [["minecraft:cocoa_beans",128,"Cocoa beans"],
+["minecraft:twisting_vines",64,"Blue vine"],
+["minecraft:glass_bottle",128,"Bottles"],
+["minecraft:nether_wart",64,"Netherwart"],
+["minecraft:red_mushroom",32,"Red mushroom"],["minecraft:carrot",128,"Carrots"],["minecraft:oak_sapling",32,"Oak saplings"],["minecraft:melon",128,"Melon"],["minecraft:kelp",64,"Kelp"],["minecraft:potato",256,"Potatoes"]]
 
 function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+1.5, z+0.5);
@@ -61,26 +65,55 @@ function mainCount() { //Count all the items in the chest
 }
 
 function emojiRelay(int) {
+    if (int == 0){
+        return(":red_square: : "+int+" recipe")
+    }
     if ((int == 1) || (int ==2)){
-        return (":orange_square: "+int+" recipe")
-    } else if (int==0) {
-        return (":red_square: "+int+" recipe")
+        return (":orange_square: : "+int+" recipes")
     } else {
-        return (":white_check_mark: "+int+" recipe")
+        return (":white_check_mark: : "+int+" recipes")
 
     }
 }
 
-function chatRelay(totalItemCount) { //Relay in the chat what is needed
-    for (let i=0;i<10;i++) {
+let web = "https://discord.com/api/webhooks/1311751870372515963/J5sqWHq1tdhMu62Cb36rIE-m7ljedHkMYNU6UYlElTwiEyRfpk2efYFlcgqB9IJdclW9";
+
+function SendWebhook(username, message) {
+    let data = {
+        "username": username,
+        "content": message
+    };
+
+    const req = Request.create(web);
+    req.addHeader('Content-Type', 'application/json');
+    req.addHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    const response = req.post(JSON.stringify(data));
+}
+
+
+function chatRelay(totalItemCount) {
+    let messageParts = []; // Initialize an array to store each part of the message
+    
+    for (let i = 0; i < 10; i++) {
         if (totalItemCount.containsKey(expRecipe[i][0])) {
-            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : "+emojiRelay(Math.floor((totalItemCount.get(expRecipe[i][0])/expRecipe[i][1]))));
+            // Add the recipe info to the message array
+            messageParts.push(
+                `${expRecipe[i][2]} : ${emojiRelay(Math.floor(totalItemCount.get(expRecipe[i][0]) / expRecipe[i][1]))}`
+            );
         } else {
-            Chat.say("/g FU-Bot "+expRecipe[i][2]+" : :red_square: 0 recipes");
+            // Add the "0 recipes" message to the array
+            messageParts.push(`${expRecipe[i][2]} : :red_square: 0 recipes`);
         }
-        
     }
+
+    // Join the message parts with single newline for one-paragraph separation
+    const message = messageParts.join("\n");
+
+    // Send the entire message via the webhook
+    SendWebhook("Farmer shakira", message);
 }
+
+
 
 function main() { //Execute the functions in the correct order
     totalItemCount = mainCount();
