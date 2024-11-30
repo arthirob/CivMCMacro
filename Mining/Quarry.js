@@ -13,11 +13,11 @@ const im = Player.getInteractionManager();
 const inv = Player.openInventory();
 
 //What you should modify, your holes coordinate.
-const xWest = -32; // The X coordinate of your starting point
-const zSouth = -50; // The Z coordinate of your starting point
-const yStop = -55; // The y layer at which you want to stop
-const North = 28; // The number of block you want to dig to the north of the startpoint
-const East = 25; // The number of block you want to dig to the east of the startpoint
+const xWest = -1; // The X coordinate of your starting point
+const zSouth = -27; // The Z coordinate of your starting point
+const yStop = -50; // The y layer at which you want to stop
+const North = 20; // The number of block you want to dig to the north of the startpoint
+const East = 20; // The number of block you want to dig to the east of the startpoint
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
 const lagBreak = 7;//Add a little delay to compensate the lag. You can try to play with this one
@@ -107,6 +107,17 @@ function walkTo(x, z) { // Walk to the center of a block
     KeyBind.keyBind("key.forward", false);
     Client.waitTick(3);
     
+}
+
+function checkHaste() { //Function that return a bool if you have the haste debuff
+    gotBuff = false;
+    effectMap = p.getStatusEffects();
+    for (let i=0;i<effectMap.length;i++) {
+        if ((effectMap[i].getId()=="minecraft:haste")&&(effectMap[i].getStrength()==1)) {
+            gotBuff=true;
+        }
+    }
+    return gotBuff;
 }
 
 function toolSwitch(){ //This is to be corrected... For some reasons, maths don't check with the wiki
@@ -201,6 +212,7 @@ function mineOne(x,z) { // Mine the block at this z value and walk to it
 
 function unstuck(x,z) { //If you are stuck, you are either hitting a block, or on the edge of a block
     KeyBind.keyBind("key.forward", false);
+    Chat.log("You are stucked, unstucking you")
     if ((dir==0)||(dir==1)) {
         var dist = (Math.abs(p.getZ()-0.5-z))
     } else {

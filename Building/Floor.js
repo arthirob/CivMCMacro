@@ -3,11 +3,11 @@
 
 
 //Only edit those two variable, the rest don't touch
-const distSouth = 10; //The number of blocks you want to go south
-const distEast = 10;  //The number of blocks you want to go east
-const torchGridX = 6; //The x distance between your torches
-const torchGridZ = 6; //The z distance between your torches
-const speed = 1; //1 if you have speed 1, 0 if you have speed 0
+const distSouth = 8; //The number of blocks you want to go south
+const distEast = 67;  //The number of blocks you want to go east
+const torchGridX = -1; //The x distance between your torches
+const torchGridZ = -1; //The z distance between your torches
+const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
 const p = Player.getPlayer() ;
@@ -50,10 +50,11 @@ function walkTo(x, z) { // Walk to the center of a block
 }
 
 function placeTorch(x,z){ // Place a torch if it follows the torch grid
-    if ((x%torchGridX==0)&&(z%torchGridZ==0)) {
+    /*if ((x%torchGridX==0)&&(z%torchGridZ==0)) {
         placeFill(2);
         inv.setSelectedHotbarSlotIndex(0);
     }
+    */
 }
 
 function placeFill(i) { //Autofill the i slot
@@ -114,7 +115,7 @@ function lineX() {
             KeyBind.keyBind("key.sneak", false);
             Client.waitTick(5-2*speed)
             KeyBind.keyBind("key.sneak", true);
-			placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+            placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
         }
     }
     KeyBind.keyBind("key.back", false);
@@ -133,18 +134,18 @@ function turn(){
     while (prevZ != p.getZ()) {
         prevZ = p.getZ();
         Client.waitTick()
-		
+        
     }
     Client.waitTick(1);
     placeFill(0);
-	placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+    placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
     Client.waitTick(1)
     KeyBind.keyBind("key.back", false);
 }
 
 function Floor(){
     p.lookAt(90,0);
-	equip("minecraft:torch",2);
+    //equip("minecraft:torch",2);
     while ((p.getZ()<zSouth)) {
         lineX();
         turn();

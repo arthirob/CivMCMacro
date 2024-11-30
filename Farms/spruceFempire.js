@@ -31,9 +31,9 @@ const woodType = "spruce"
 const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const toDump = [`minecraft:${woodType}_sapling`,`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
+const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
 const fastMode = true; //Switch to true for faster harvest. Will consume more hoes
-const foodType = "minecraft:bread"; // Change the food to be whatever you prefer to use !
+const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const dumpSpot = -6202;
 const runningPause = 10;// The amount of time you stop when bumping leaves
 var breakTime;
@@ -70,7 +70,6 @@ function equipFood() {
     }
     inv.swapHotbar(foodList[0],2);
 }
-
 
 function eat() {
     if (p.getFoodLevel()<16) {
@@ -113,7 +112,7 @@ function placeFill(i) { //Autofill the i slot
 }
 
 function lookAtCenter(x, z) {// Look at the center of a block
-    p.lookAt(x+0.5,p.getY()+1.5, z+0.5);
+    p.lookAt(x+0.5,p.getY(), z+0.5);
 }
 
 function walkTo(x, z) { // Walk to the center of a block
@@ -436,4 +435,4 @@ function start() { //Allows to start back where you were. Finish the row, and pl
     }
 }
 
-start();
+start()
