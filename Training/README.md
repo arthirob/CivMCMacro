@@ -15,7 +15,7 @@ Feel free to ask to arthirob#1530 (they/neutral) on discord. They love to teach 
 ## Challenge 0
 Download the challenge 0 script, and execute it from the challenge 1 starting point. This is to make sure you know how to set up JSMacro and to make sure the cancel macro is setup. On my github, it is : Utility/HoFuck.js 
 
-## First part
+## Part 1 : Moving
 ### Challenge 1 
 Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script
 
@@ -34,6 +34,8 @@ Start from the green concrete, reach the red concrete. You are allowed to check 
 ### Challenge 6
 Walk on all the orange square. You are allowed to check any coordinate you want. Start in the north west corner,
 
+## Part 2 : Placing
+
 ### Challenge 7
 Place torches in the square in a 3x3 grid. You are allowed to check all the coordinates you want inside the white concrete zone
 
@@ -43,3 +45,26 @@ Make a tower with the jungle log, so that it's 5 blocks high. You must use a for
 ### Challenge 9
 Make a tower with the jungle log, and place beans around it so that it's 8 blocks high
 
+## Part 3 : Inventory and crafting
+### Challenge 10
+Have an empty inventory except one item. Make it go throught all inventory slots
+
+### Challenge 11
+Have an empty inventory except one item. Make it go throught all chests slots
+
+### Challenge 12
+Equip the lowest durability tool of the chest in your first slot, and the torches in the second slot
+
+### Challenge 13
+Launch 32 snowballs, and autorefill your hand when you are out of snowball
+
+### Challenge 14
+Start from 2 logs, craft planks and craft a chest.
+
+
+## Part 4 : Playing with factory
+### Challenge 15
+Turn 64 cobblestone into 96 stone
+
+### Challenge 16
+Turn 64 cobblestone into 32 stone and 80 smoothstone
