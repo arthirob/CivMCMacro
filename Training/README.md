@@ -20,7 +20,7 @@ Download the challenge 0 script, and execute it from the challenge 1 starting po
 Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script
 
 ### Challenge 2
-Start from the green concrete, reach the red concrete but look at the north. You are allowed to check the red concrete coordinate before starting the script
+Start from the green concrete, reach the red concrete but look at the west. You are allowed to check the red concrete coordinate before starting the script
 
 ### Challenge 3
 Start from the green concrete, reach the red concrete, keep looking at the center of the blue concrete. Stay in the orange line. You are allowed to check the red and blue concrete coordinate before starting the script
