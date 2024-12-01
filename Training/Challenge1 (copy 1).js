@@ -1,9 +1,9 @@
-const redConcreteX = 6483;
+const redConcreteZ = -6922;
 const p = Player.getPlayer() ;
 
 
 KeyBind.keyBind("key.forward",true)
-while (p.getX()<redConcreteX) {
+while (p.getZ()>(redConcreteZ+1)) {
     Client.waitTick();
 }
 KeyBind.keyBind("key.forward",false)

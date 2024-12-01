@@ -12,6 +12,9 @@ In this folder, you'll find a proposition of a way to resolve all the challenges
 Feel free to ask to arthirob#1530 (they/neutral) on discord. They love to teach other people ! :)
 
 # List of challenges
+## Challenge 0
+Download the challenge 0 script, and execute it from the challenge 1 starting point. This is to make sure you know how to set up JSMacro and to make sure the cancel macro is setup. On my github, it is : Utility/HoFuck.js 
+
 ## First part
 ### Challenge 1 
 Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script

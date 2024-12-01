@@ -1,8 +1,8 @@
 const p = Player.getPlayer() ;
-const xEast = 6469;
-const xWest = 6461;
-const zNorth = -6066;
-const zSouth = -6056;
+const xEast = 6026;
+const xWest = 6016;
+const zNorth = -6908;
+const zSouth = -6900;
 
 function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY(), z+0.5);
@@ -19,7 +19,7 @@ function walkTo(x, z) { // Walk to the center of a block
 }
 
 for (let i=xWest;i<=xEast;i++) {
-    for (let j=zNorth;j<=zSouth;j++) {
+    for (let j=zSouth;j>=zNorth;j--) {
         walkTo(i,j);
     }
 }

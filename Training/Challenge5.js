@@ -1,7 +1,6 @@
-const redConcreteX = 6483;
+const redConcreteZ = -6922;
 const p = Player.getPlayer() ;
-var prevX; //The x before the tick
-var obstacleX; //The x at which you find an obstacle
+var prevZ;
 var triedJump; //A bool if you tried just a jump
 var oldYaw;
 
@@ -21,24 +20,23 @@ function placeJump() {
     p.lookAt(oldYaw,0);
 }
 
-p.lookAt(-90,0);
+p.lookAt(180,0);
 triedJump = false;
 KeyBind.keyBind("key.forward",true)
-while (p.getX()<redConcreteX) {
-    prevX = p.getX();
+while (p.getZ()>(redConcreteZ+1)) {
+    prevZ = p.getZ();
     Client.waitTick();
-    if (p.getX()==prevX) { //You are bumping in something
+    if (p.getZ()==prevZ) { //You are bumping in something
         if (triedJump) {
-            Chat.log("In if")
             placeJump()
             triedJump = false;
         } else {
             jump();
             Client.waitTick(10)
-            if (p.getX()==prevX) { //You tried jumping and it didn't worked
+            if (p.getZ()==prevZ) { //You tried jumping and it didn't worked
                 triedJump = true;
             } else {
-                prevX = p.getX();
+                prevZ = p.getZ();
                 triedJump = false;
             }
         }

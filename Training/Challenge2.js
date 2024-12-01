@@ -1,9 +1,9 @@
-const redConcreteX = 6483;
+const redConcreteZ = -6922;
 const p = Player.getPlayer() ;
 
-p.lookAt(180,0)
+p.lookAt(90,0)
 KeyBind.keyBind("key.right",true)
-while (p.getX()<redConcreteX) {
+while (p.getZ()>(redConcreteZ+1)) {
     Client.waitTick();
 }
 KeyBind.keyBind("key.right",false)

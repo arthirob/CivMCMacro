@@ -1,8 +1,9 @@
 const p = Player.getPlayer() ;
-const xEast = 6469;
-const xWest = 6461;
-const zNorth = -6066;
-const zSouth = -6056;
+const xEast = 6026;
+const xWest = 6016;
+const zNorth = -6908;
+const zSouth = -6900;
+
 const torchGridX = 3;
 const torchGridZ = 3;
 
@@ -29,7 +30,7 @@ function placeTorch(x,z){ // Place a torch if it follows the torch grid
 }
 
 for (let i=xWest;i<=xEast;i++) {
-    for (let j=zNorth;j<=zSouth;j++) {
+    for (let j=zSouth;j>=zNorth;j--) {
         walkTo(i,j);
         placeTorch(i,j);
     }

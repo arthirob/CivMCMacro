@@ -1,8 +1,9 @@
 const p = Player.getPlayer() ;
-const xEast = 6469;
-const xWest = 6461;
-const zNorth = -6066;
-const zSouth = -6056;
+const xEast = 6026;
+const xWest = 6016;
+const zNorth = -6908;
+const zSouth = -6900;
+
 var dir;//The direction you are going. 1 for north, 0 for south. Edit here to change the start value
 var lineFinished;
 
@@ -34,7 +35,7 @@ function line(x) {
 
 }
 
-dir = 0;
+dir = 1;
 for (let i=xWest;i<=xEast;i++) {
     line(i);
     dir = 1-dir;

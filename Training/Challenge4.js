@@ -1,13 +1,13 @@
-const redConcreteX = 6483;
+const redConcreteZ = -6922;
 const p = Player.getPlayer() ;
-var prevX;
+var prevZ;
 
-p.lookAt(-90,0);
+p.lookAt(180,0);
 KeyBind.keyBind("key.forward",true)
-while (p.getX()<redConcreteX) {
-    prevX = p.getX();
+while (p.getZ()>(redConcreteZ+1)) {
+    prevZ = p.getZ();
     Client.waitTick();
-    if (p.getX()==prevX) {
+    if (p.getZ()==prevZ) {
         KeyBind.keyBind("key.jump",true)
         Client.waitTick()
         KeyBind.keyBind("key.jump",false)

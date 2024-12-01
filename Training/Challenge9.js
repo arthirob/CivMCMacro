@@ -1,6 +1,6 @@
 const p = Player.getPlayer() ;
-const treeX = 6473;
-const treeZ = -6064;
+const treeX = 6018;
+const treeZ = -6912;
 const smallWait = 4;
 const longWait = 14;
 const inv = Player.openInventory();
