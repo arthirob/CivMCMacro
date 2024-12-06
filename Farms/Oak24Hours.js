@@ -38,7 +38,8 @@ const dumpSpot = -4522;
 const shearsNeeded = 4; //The amount of shears you have in hand
 const saplingStack = Math.floor(((xEast-xWest)/rowSpace)*((zSouth-zNorth)/treeSpace)/64)+2; //How many stack of sapling you need to run a level
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
+const shearDamageTreshold= 10;
+const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`,`minecraft:shears`];
 const fastMode = true; //Switch to true for faster harvest. Will consume more shears
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 var breakTime;
@@ -183,7 +184,7 @@ function toolSwitch(){ //Function to switch to the lowest durability axe still u
     breakTime = Math.ceil(1/damage)+4 // Needs correction I guess...;
 }
 
-function dumpWood() //Throw the wood in the water, keep up to 10 stacks of saplings
+function dumpWood() //Throw the wood and broken shears in the water
 {
     Chat.log("Starting function dumpWood")
 
@@ -195,7 +196,14 @@ function dumpWood() //Throw the wood in the water, keep up to 10 stacks of sapli
     let saplingCount = 0; // Keep some saplings
     for (let i = 9; i < 45 ; i++)    {
         if (toDump.includes(inv.getSlot(i).getItemID())) {
-            inv.dropSlot(i,true)
+            if (inv.getSlot(i).getItemID()=="minecraft:shears") {
+              if ((inv.getSlot(i).getMaxDamage()-inv.getSlot(i).getDamage())<shearDamageTreshold) {
+                inv.dropSlot(i,true)
+
+              }
+            } else {
+              inv.dropSlot(i,true)
+            }
         }
     }
     Client.waitTick();
@@ -236,15 +244,24 @@ function reachLog(z) { // Break the leaves to reach the log. return true is a tr
     }
 }
 
-function shearsSwitch() {
+function shearsSwitch() { //Take a usable shear 
     Chat.log("Starting function shearSwitch")
-    const shearList = inv.findItem("minecraft:shears");
-    if (shearList.length==0) {
-        Chat.log("You are out of shears");
+    var shearList = inv.findItem("minecraft:shears");
+    foundShear = false ;
+    for (shear of shearList) {
+        if ((inv.getSlot(shear).getMaxDamage()-inv.getSlot(shear).getDamage())>shearDamageTreshold) {
+            if (!foundShear) {
+                foundShear = true;
+                inv.swapHotbar(shear,3);//Take a new one
+            }
+        }
+    }
+    if (!foundShear) {
         throw("Out of shears")
     }
-    inv.swapHotbar(shearList[0],3);//Take a new one
-}
+  }
+  
+  
 
 
 function sortLeaves() { //Check if you cut leaves at some point. If yes, there's no more logs to cut
@@ -262,7 +279,7 @@ function sortLeaves() { //Check if you cut leaves at some point. If yes, there's
         KeyBind.keyBind("key.attack",false);
         Client.waitTick();
         leafTry++;
-        if (inv.findFreeHotbarSlot()==39) { //The shears are broken
+        if ((inv.getSlot(39).getMaxDamage()-inv.getSlot(39).getDamage())<shearDamageTreshold) { //The shears are almost broken
             shearsSwitch();
         }
     }

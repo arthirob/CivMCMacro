@@ -200,13 +200,12 @@ function dumpWood() //Throw the wood in the water, keep up to 10 stacks of sapli
     
 }
 
-function reachLog(z) { // Break the leaves to reach the log
+function reachLog(z) { // Break the leaves to reach the log. return true is a tree is here, false otherwise
     Chat.log("Starting function reachLog with z value "+z);
 
     lookAtCenter(currentRow,z);
     KeyBind.keyBind("key.attack", true);
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick(runningPause);
     if (fastMode==true) {
         inv.setSelectedHotbarSlotIndex(3);
         KeyBind.keyBind("key.sprint", true);
@@ -215,7 +214,7 @@ function reachLog(z) { // Break the leaves to reach the log
     } else {
         inv.setSelectedHotbarSlotIndex(2); // Select slot 3, not the tool, not the saplings
     }   
-    while (Math.floor(p.getZ())!=(z-1+dir*2)){
+    while (Math.abs(p.getZ()-z-dir)>0.350){
         prevZ = p.getZ();
         Client.waitTick();
         if (Math.abs((p.getZ()-prevZ))<0.1) { // This allows to wait if you bump into leaves, to prevent lag
@@ -225,8 +224,14 @@ function reachLog(z) { // Break the leaves to reach the log
             Client.waitTick(lagTick);
         }
     }
+    Client.waitTick();
     KeyBind.keyBind("key.forward", false);
     KeyBind.keyBind("key.attack", false);
+    if (Math.abs(p.getZ()-z-dir)>0.3){
+        return true
+    } else {
+        return false
+    }
 }
 
 function shearsSwitch() {
@@ -326,14 +331,18 @@ function farmLine(){ // Farm a line in a specified direction
     Chat.log("Starting function farmline with row is "+currentRow);
     currentZ = Math.floor(p.getZ());
     while (!lineFinished()) {
-        var nextLog = (currentZ+treeSpace*(1-2*dir));//Next log coords
-        reachLog(nextLog); //Reach the next log
-        Client.waitTick(lagTick); // To prevent lag
-        harvestLog(nextLog,false);//Harvest the log
+        treeBool = reachLog(nextLog); //Reach the next log
+        if (treeBool) { //Only harvest when the tree is grown
+            Client.waitTick(lagTick); // To prevent lag
+            harvestLog(nextLog,false);//Harvest the log
+        } else { //If there is no tree, try to plant a sapling
+            p.lookAt(currentRow+0.5,p.getY(),nextLog+0.5);
+            placeFill(1);
+        }
         if (nextLog == dumpSpot) {
             dumpWood();
         }
-        currentZ = Math.floor(p.getZ());
+        nextLog = nextLog + treeSpace*(1-2*dir);
         }
     eat();
 }
