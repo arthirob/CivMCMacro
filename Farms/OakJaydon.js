@@ -45,8 +45,9 @@ const saplingStack = Math.floor(((xEast-xWest)/rowSpace)*((zSouth-zNorth)/treeSp
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
 const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
-const fastMode = false; //Switch to true for faster harvest. Will consume more shears
+const fastMode = true; //Switch to true for faster harvest. Will consume more shears
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
+const toolType = "minecraft:diamond_hoe"
 var breakTime;
 
 //Information to send the message in a discord relay
@@ -236,10 +237,10 @@ function reachLog(z) { // Break the leaves to reach the log. return true is a tr
 
 function shearsSwitch() {
     Chat.log("Starting function shearSwitch")
-    const shearList = inv.findItem("minecraft:shears");
+    const shearList = inv.findItem(toolType);
     if (shearList.length==0) {
-        Chat.log("You are out of shears");
-        throw("Out of shears")
+        Chat.log("You are out of leaf tool");
+        throw("Out of leaf tool")
     }
     inv.swapHotbar(shearList[0],3);//Take a new one
 }
@@ -321,16 +322,18 @@ function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk fo
 
 function lineFinished() { // Return true if a line is finished, false otherwise
     if (dir==1) {
-        return (currentZ ==zNorth)
+        return (Math.floor(p.getZ()) ==zNorth)
     } else {
-        return (currentZ == zSouth)
+        return (Math.floor(p.getZ()) == zSouth)
     }
 }
 
 function farmLine(){ // Farm a line in a specified direction
     Chat.log("Starting function farmline with row is "+currentRow);
     currentZ = Math.floor(p.getZ());
+    nextLog = currentZ+treeSpace*(1-2*dir);
     while (!lineFinished()) {
+        Chat.log("finished bool is "+lineFinished())
         treeBool = reachLog(nextLog); //Reach the next log
         if (treeBool) { //Only harvest when the tree is grown
             Client.waitTick(lagTick); // To prevent lag
