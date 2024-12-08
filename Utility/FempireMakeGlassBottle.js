@@ -28,9 +28,12 @@ const xTempBottleChest = 5923;
 const zTempBottleChest = -6501;
 
 const p = Player.getPlayer() ;
-const lagTick = 10;
+const lagTick = 20;
 const chestRecipe=[1,3,5]
 var inv = Player.openInventory();
+const discordGroup = 'FU-Bot';
+const farmName = "Glass bottle factory"
+const startTime = Date.now();
 
 function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+0.5, z+0.5);
@@ -224,6 +227,12 @@ function checkInv() {//Check if you only have 2 slots in your inventory, otherwi
     }
 }
 
+function finishFarm() {
+    const farmTime = Math.floor((Date.now()-startTime)/1000);
+    Chat.say("/g "+discordGroup+" "+farmName+" is finished to craft in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out") 
+    Chat.say("/logout")
+}
+
 function start() { //Start the craft.
     checkInv();
     equiStick();
@@ -259,7 +268,7 @@ function start() { //Start the craft.
     waitSecond(60);
     Chat.log("Step 8");
     craftBottle(true,false);
-    Chat.log("Finished the crafting");
+    finishFarm();
 }
 
-switchRecipe(1);
+finishFarm();
