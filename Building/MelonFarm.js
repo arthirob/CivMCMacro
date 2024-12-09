@@ -3,12 +3,10 @@
 
 
 //Only edit those five variable, the rest don't touch
-const floorSide = 1; //1 if you want your floor on the right, -1 for on the left
-const floorLength = 7; //Your floor length
-const floorWidth = 4; // Your floor width
-
-const torchGridX = 3; //The x distance between your torches
-const torchGridZ = 3; //The z distance between your torches
+const xLodestone = 82;
+const zLodestone = 61; 
+const torchGridX = 0; //The x distance between your torches
+const torchGridZ = 0; //The z distance between your torches
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
@@ -22,7 +20,7 @@ var prevX;
 var dir;
 
 function lookAtCenter(x, z) {// Look at the center of a block
-    p.lookAt(x+0.5,p.getY()+1.5, z+0.5);
+    p.lookAt(x+0.5,p.getY(), z+0.5);
 }
 
 function equip(item,slot) { // Equip an item in a certain slot
@@ -34,15 +32,16 @@ function equip(item,slot) { // Equip an item in a certain slot
     Client.waitTick();
 }
 
-function walkTo(x, z) { // Walk to the center of a block
-    Chat.log("Starting function walkTO")
-    lookAtCenter(x,z);
+function walkSlowTo(x, z) { // Walk to the center of a block
     KeyBind.keyBind("key.forward", true);
-    while ((Math.abs(p.getX() - x - 0.5) > 0.2 || Math.abs(p.getZ() - z - 0.5 ) > 0.2)){
+    KeyBind.keyBind("key.sneak", true);
+    while ((Math.abs(p.getX() - x - 0.5) > 0.05 || Math.abs(p.getZ() - z - 0.5 ) > 0.05)){
         lookAtCenter(x,z);//Correct the trajectory if needed
         Time.sleep(10);
     }
     KeyBind.keyBind("key.forward", false);
+    KeyBind.keyBind("key.sneak", false);
+
     Client.waitTick(3);
     
 }
@@ -71,7 +70,6 @@ function placeFill(i) { //Autofill the i slot
             KeyBind.keyBind("key.sneak", false);
             Chat.log("Out of materials")
             World.playSound("entity.elder_guardian.curse", 200);
-            walkTo(1278,-4578)
             throw("No more mats")
         }
         inv.swapHotbar(list[0],i);
@@ -85,7 +83,6 @@ function placeFill(i) { //Autofill the i slot
         KeyBind.keyBind("key.forward", false);
         KeyBind.keyBind("key.sneak", false);
         World.playSound("entity.elder_guardian.curse", 200);
-        walkTo(1278,-4578)
         throw("Out of stone");
     }
 }
@@ -115,7 +112,7 @@ function line(length) {
     }
     KeyBind.keyBind("key.back", false);
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick(8-4*speed);
+    Client.waitTick(12-4*speed);
     KeyBind.keyBind("key.forward", false);
 }
 
@@ -148,13 +145,30 @@ function Floor(length,width,firstTurn){//Make a floor of a certain length and wi
             turn(firstTurn);
             firstTurn = - firstTurn
         }
-        if (i==0) {
-            length++ //As you start from a block, but not after, the first line is one block shorter
-        }
         p.lookAt(dir+180,80);
 
     }
 
 }
 
-Floor(floorLength,floorWidth,floorSide);
+function makeMelonFloor(){
+    walkSlowTo(xLodestone,zLodestone);
+    p.lookAt(90,0);
+    Floor(45,4,1)
+    walkSlowTo(xLodestone-1,zLodestone);
+    dir = 90;
+    turn(1);
+    p.lookAt(90,0);
+    Floor(44,11,-1);
+    walkSlowTo(xLodestone,zLodestone-1);
+    dir = 180;
+    turn(-1);
+    p.lookAt(-90,0);
+    Floor(12,3,-1);
+    dir = 90;
+    turn(-1);
+    p.lookAt(-180,0);
+    Floor(30,21,-1)
+}
+
+makeMelonFloor();
