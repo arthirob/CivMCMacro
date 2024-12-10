@@ -30,7 +30,7 @@ const woodType = "birch"
 const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
 const runningPause = 10;// The amount of time you stop when bumping leaves
 const dumpSpot = -4439;
-const shearsNeeded = 4; //The amount of shears you have in hand
+const leafTool = "minecraft:iron_hoe"
 const saplingStack = Math.floor(((xEast-xWest)/rowSpace)*((zSouth-zNorth)/treeSpace)/64)+2; //How many stack of sapling you need to run a level
 const damageTreshhold=20; //The damage at which you want to stop using your tool
 const shearDamageTreshold= 10;
@@ -190,7 +190,7 @@ function dumpWood() //Throw the wood and broken shears in the water
     let saplingCount = 0; // Keep some saplings
     for (let i = 9; i < 45 ; i++)    {
         if (toDump.includes(inv.getSlot(i).getItemID())) {
-            if (inv.getSlot(i).getItemID()=="minecraft:shears") {
+            if (inv.getSlot(i).getItemID()==leafTool) {
               if ((inv.getSlot(i).getMaxDamage()-inv.getSlot(i).getDamage())<shearDamageTreshold) {
                 inv.dropSlot(i,true)
 
@@ -240,7 +240,7 @@ function reachLog(z) { // Break the leaves to reach the log. return true is a tr
 
 function shearsSwitch() { //Take a usable shear 
     Chat.log("Starting function shearSwitch")
-    var shearList = inv.findItem("minecraft:shears");
+    var shearList = inv.findItem(leafTool);
     foundShear = false ;
     for (shear of shearList) {
         if ((inv.getSlot(shear).getMaxDamage()-inv.getSlot(shear).getDamage())>shearDamageTreshold) {
