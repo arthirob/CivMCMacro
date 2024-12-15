@@ -271,4 +271,4 @@ function start() { //Start the craft.
     finishFarm();
 }
 
-finishFarm();
+start();
