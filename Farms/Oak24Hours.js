@@ -19,36 +19,6 @@ var inv = Player.openInventory();
 
 //Farm borders and properties
 
-const lodestoneX = 1273;
-const lodeStoneZ = -4583;
-const xEast = 1390 ; //Easter row
-const xWest = 1282 ; // Western row
-const zNorth = -4581; // North limit
-const zSouth = -4459; // South limit
-const firstLevel = 78; //First level of the farm
-const farmNumberLevel = 15; //Number of farm level
-const rowSpace = 4; //Space between rows
-const treeSpace = 4; //Space between trees in a row
-const firstTreeDist = 7;//The distance between the first tree and the edge of the farm
-const levelSpace = 8; //Space between two levels
-const woodType = "oak"
-const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
-const runningPause = 10;// The amount of time you stop when bumping leaves
-const dumpSpot = -4522;
-const shearsNeeded = 4; //The amount of shears you have in hand
-const saplingStack = Math.floor(((xEast-xWest)/rowSpace)*((zSouth-zNorth)/treeSpace)/64)+2; //How many stack of sapling you need to run a level
-const damageTreshhold=20; //The damage at which you want to stop using your tool
-const shearDamageTreshold= 10;
-const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`,`minecraft:shears`];
-const fastMode = true; //Switch to true for faster harvest. Will consume more shears
-const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
-var breakTime;
-
-//Information to send the message in a discord relay
-const discordGroup = 'hakr-bots';
-const farmName = "24 hour fitness"
-const regrowTime = 24;
-
 //Variable of the script, no touching as well
 var currentRow; //Current row, in Z cords
 var currentX; //X at the start of the script
@@ -128,6 +98,7 @@ function walkTo(x, z) { // Walk to the center of a block
     lookAtCenter(x,z);
     KeyBind.keyBind("key.forward", true);
     while ((Math.abs(p.getX() - x - 0.5) > 0.2 || Math.abs(p.getZ() - z - 0.5 ) > 0.2)){
+        Chat.log("Inthe while")
         lookAtCenter(x,z);//Correct the trajectory if needed
         Time.sleep(10);
     }
@@ -508,6 +479,5 @@ function start() { //Allows to start back where you were. Finish the row, and pl
         Chat.log("You are not in the farm, cannot proceed");
     }
 }
-
 
 start();
