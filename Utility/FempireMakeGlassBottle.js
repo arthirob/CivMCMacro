@@ -28,6 +28,7 @@ const xTempBottleChest = 5923;
 const zTempBottleChest = -6501;
 
 const p = Player.getPlayer() ;
+const servTPS = parseInt(World.getServerTPS().substr(0,2));
 const lagTick = 20;
 const chestRecipe=[1,3,5]
 var inv = Player.openInventory();
@@ -40,7 +41,7 @@ function lookAtCenter(x, z) {// Look at the center of a block
 }
 
 function waitSecond(second) {
-    Client.waitTick(20*second);
+    Client.waitTick(Math.ceil(400*second/servTPS));
 }
 
 function walkSneakTo(x, z) { // Walk to the center of a block

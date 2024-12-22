@@ -26,6 +26,8 @@ const xTempSandChest = 4770;
 const zTempSandChest = -1979;
 const xTempBottleChest = 4770;
 const zTempBottleChest = -1978;
+const servTPS = parseInt(World.getServerTPS().substr(0,2));
+
 
 const p = Player.getPlayer() ;
 const lagTick = 10;
@@ -37,7 +39,7 @@ function lookAtCenter(x, z) {// Look at the center of a block
 }
 
 function waitSecond(second) {
-    Client.waitTick(20*second);
+    Client.waitTick(Math.ceil(400*second/servTPS));
 }
 
 function walkSneakTo(x, z) { // Walk to the center of a block
