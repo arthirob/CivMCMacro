@@ -1,6 +1,6 @@
 # Training ground
 ## What is it ?
-The training ground is a concrete platform located in fempire (6500,-6000), to learn the different aspects of JSMacro. It was initially created by arthirob, and is meant for public access for anyone who wants to learn JSMacro.
+The training ground is a concrete platform located in fempire (6000,-6900), to learn the different aspects of JSMacro. It was initially created by arthirob, and is meant for public access for anyone who wants to learn JSMacro.
 
 ## How to use it ?
 You can just access it, and the list of challenges should be written in signs. Each challenge should help you learning a specific function. When nothing is written, you don't need bastion access, but you'll sometimes needs it.
@@ -26,10 +26,10 @@ Start from the green concrete, reach the red concrete but look at the west. You 
 Start from the green concrete, reach the red concrete, keep looking at the center of the blue concrete. Stay in the orange line. You are allowed to check the red and blue concrete coordinate before starting the script
 
 ### Challenge 4
-Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about purple concrete
+Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about light blue concrete
 
 ### Challenge 5
-Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about purple concrete. You can place dirt blocks. 
+Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about light blue concrete. You can place dirt blocks. 
 
 ### Challenge 6
 Walk on all the orange square. You are allowed to check any coordinate you want. Start in the north west corner,
