@@ -3,12 +3,12 @@
 
 
 //Only edit those five variable, the rest don't touch
-const floorSide = 1; //1 if you want your floor on the right, -1 for on the left
-const floorLength = 7; //Your floor length
-const floorWidth = 4; // Your floor width
+const floorSide = -1; //1 if you want your floor on the right, -1 for on the left
+const floorLength = 30; //Your floor length
+const floorWidth = 20; // Your floor width
 
-const torchGridX = 3; //The x distance between your torches
-const torchGridZ = 3; //The z distance between your torches
+const torchGridX = 0; //The x distance between your torches
+const torchGridZ = 0; //The z distance between your torches
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
@@ -141,7 +141,7 @@ function turn(leftOrRight){ //Turn in a direction. -1 for left, 1 for right
 function Floor(length,width,firstTurn){//Make a floor of a certain length and width, and specify the direction you want it to go.
     p.lookAt(p.getYaw()+180,80);
     Client.waitTick();
-    equip("minecraft:torch",1);
+    //equip("minecraft:torch",1);
     for (let i=0;i<width;i++) {
         line(length);
         if (i<(width-1)) { //Don't turn on last line

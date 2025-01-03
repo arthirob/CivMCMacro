@@ -3,8 +3,8 @@
 
 
 //Only edit those five variable, the rest don't touch
-const xLodestone = 82;
-const zLodestone = 61; 
+const xLodestone = 4888;
+const zLodestone = -6316; 
 const torchGridX = 0; //The x distance between your torches
 const torchGridZ = 0; //The z distance between your torches
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
@@ -46,6 +46,10 @@ function walkSlowTo(x, z) { // Walk to the center of a block
     
 }
 
+function move(x,z) { //Make you move in a x and z direction
+    walkSlowTo(Math.floor(p.getX())+x,Math.floor(p.getZ()+z))
+}
+
 function placeTorch(x,z){ // Place a torch if it follows the torch grid
     if ((x%torchGridX==0)&&(z%torchGridZ==0)) {
         placeFill(1);
@@ -60,7 +64,6 @@ function placeFill(i) { //Autofill the i slot
     Client.waitTick();
     if (inv.getSlot(36+i).getCount()==0) { //i slot empty
         list = inv.findItem(item);
-        Chat.log(list.length);
         if (list.length==0) {
             KeyBind.keyBind("key.back", false);
             KeyBind.keyBind("key.left", false);
@@ -138,7 +141,6 @@ function turn(leftOrRight){ //Turn in a direction. -1 for left, 1 for right
 function Floor(length,width,firstTurn){//Make a floor of a certain length and width, and specify the direction you want it to go.
     p.lookAt(p.getYaw()+180,80);
     Client.waitTick();
-    equip("minecraft:torch",1);
     for (let i=0;i<width;i++) {
         line(length);
         if (i<(width-1)) { //Don't turn on last line
@@ -153,22 +155,56 @@ function Floor(length,width,firstTurn){//Make a floor of a certain length and wi
 
 function makeMelonFloor(){
     walkSlowTo(xLodestone,zLodestone);
-    p.lookAt(90,0);
-    Floor(45,4,1)
-    walkSlowTo(xLodestone-1,zLodestone);
-    dir = 90;
-    turn(1);
-    p.lookAt(90,0);
-    Floor(44,11,-1);
-    walkSlowTo(xLodestone,zLodestone-1);
-    dir = 180;
-    turn(-1);
     p.lookAt(-90,0);
-    Floor(12,3,-1);
-    dir = 90;
-    turn(-1);
-    p.lookAt(-180,0);
-    Floor(30,21,-1)
+    line(2)
+    p.lookAt(180,0);
+    line(2);
+    p.lookAt(0,0);
+    Floor(12,4,1)
+    
+    p.lookAt(-90,0);
+    line(2)
+    p.lookAt(90,0)
+    Floor(40,4,-1)
+    move(1,0);
+    move(0,2);
+    p.lookAt(-90,0);
+    line(2);
+    p.lookAt(90,0);
+    Floor(40,4,-1);
+    move(1,0);
+    move(0,2);
+    p.lookAt(-90,0);
+    line(2);
+    p.lookAt(90,0);
+    Floor(40,2,-1)
+    
+    move(1,0);
+    move(0,-11);
+    p.lookAt(0,0);
+    line(3);
+    p.lookAt(180,0);
+    Floor(32,4,-1)
+    
+    move(0,-1);
+    p.lookAt(-90,0);
+    line(2);
+    p.lookAt(90,0);
+    Floor(37,2,-1)
+    
+    move(4,0);
+    p.lookAt(90,0);
+    line(3);
+    p.lookAt(180,0);
+    Floor(32,4,1);
+    p.lookAt(90,0);
+    line(3);
+    p.lookAt(180,0);
+    Floor(32,4,1);
+    p.lookAt(90,0);
+    line(3);
+    p.lookAt(180,0);
+    Floor(32,4,1);
 }
 
 makeMelonFloor();
