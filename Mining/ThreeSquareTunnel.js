@@ -2,7 +2,6 @@
 V1.0 by arthirob, 06/12/2024 
 
 Things to improve
-Make it auto equip ST pick on 3rd slot
 */
 
 
@@ -25,8 +24,16 @@ const toolType = "pickaxe"; // Can be "shovel" or "pickaxe" depending on what yo
 const blockHardness = 3; // 1.5 for stone like, 0.5 for dirt like
 const solidBlock = "minecraft:cobbled_deepslate" // The block you'll use to fill the holes under you
 const toDump = ["minecraft:stone","minecraft:cobblestone","minecraft:tuff","minecraft:moss_block","minecraft:diorite","minecraft:granite","minecraft:smooth_basalt","minecraft:cobbled_deepslate","minecraft:calcite","minecraft:andesite","minecraft:deepslate"]
+
+/*4x3 wall
+const pitchList = [-70,0,70,-70,0,70,-70,0,70,-70,0,70,];
+const yawList = [-70,-82,-70,-50,-75,-50,0,0,0,35,70,35,];
+*/
+
+/* 3x3 wall*/
 const pitchList = [-70,0,70,-70,0,70,-70,0,70,];
 const yawList = [-50,-75,-50,0,0,0,35,70,35,];
+
 
 
 // Don't touch those variables, they are used during the script to track execution
@@ -76,14 +83,19 @@ function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+0.5, z+0.5);
 }
 
-function walkTo(x, z) { // Walk to the center of a block
+function walkTo(x, z,sneak) { // Walk to the center of a block
     lookAtCenter(x,z);
+    if (sneak) {
+        KeyBind.keyBind("key.sneak", true);
+
+    }
     KeyBind.keyBind("key.forward", true);
-    while ((Math.abs(p.getX() - x - 0.5) > 0.1 || Math.abs(p.getZ() - z - 0.5 ) > 0.1)){
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.05){
         lookAtCenter(x,z);//Correct the trajectory if needed
         Time.sleep(10);
     }
     KeyBind.keyBind("key.forward", false);
+    KeyBind.keyBind("key.sneak", false);
     Client.waitTick(3);
     
 }
@@ -176,19 +188,17 @@ function mineAWall(){
     KeyBind.keyBind("key.attack", true);
     KeyBind.keyBind("key.sneak", true);
 
-    for (let i=0;i<3;i++) {
-        for (let j=0;j<3;j++) {
-            p.lookAt(dir*90+pitchList[i*3+j],yawList[i*3+j]);
+    for (let i=0;i<pitchList.length;i++) {
+        p.lookAt(dir*90+pitchList[i],yawList[i]);
+        Client.waitTick(breakTime)
+        var textString = Chat.getHistory().getRecvLine(0).getText().getString();
+        if (textString.startsWith("A SimpleAdmin")) {
+            Chat.log("Switching");
+            inv.setSelectedHotbarSlotIndex(2);
             Client.waitTick(breakTime)
-            var textString = Chat.getHistory().getRecvLine(0).getText().getString();
-            if (textString.startsWith("A SimpleAdmin")) {
-                Chat.log("In here")
-                inv.setSelectedHotbarSlotIndex(2);
-                Client.waitTick(breakTime)
-                inv.setSelectedHotbarSlotIndex(0);
-            }
-
+            inv.setSelectedHotbarSlotIndex(0);
         }
+
     }
     KeyBind.keyBind("key.attack", false);
     KeyBind.keyBind("key.forward", true);
@@ -288,8 +298,18 @@ function walkForward(){
     KeyBind.keyBind("key.forward", false);
 }
 
+function placePerfect(){
+    walkTo(Math.floor(p.getX()),Math.floor(p.getZ()),true);
+    p.lookAt(dir*90,0);
+    KeyBind.keyBind("key.forward", true);
+    Client.waitTick(10);
+    KeyBind.keyBind("key.forward", false);
+}
+
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
+    placePerfect();
     toolSwitch();
+    silkTouchSwitch();
 
     inv.setSelectedHotbarSlotIndex(0);
     equip(solidBlock,1);// Put the solid block in the second slot
