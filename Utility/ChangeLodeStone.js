@@ -1,0 +1,10 @@
+const lagTick = 6;
+Chat.say("/config");
+Client.waitTick(lagTick);
+var inv = Player.openInventory();
+inv.click(10,0);
+Client.waitTick(lagTick);
+inv = Player.openInventory();
+inv.click(14,0);
+Client.waitTick(lagTick);
+inv.close();
