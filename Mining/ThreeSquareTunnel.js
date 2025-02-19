@@ -1,6 +1,8 @@
 /*Script to dig a 3x3 tunnel
 V1.0 by arthirob, 06/12/2024 
 
+Hotbar should be : Not silk touch on first slot, solid block on second, silk touch on third slot
+
 Things to improve
 */
 
@@ -17,33 +19,30 @@ const dir = 0; // -1 for east, 0 for south, 1 for west and 2 for north
 const tunnelLength = 100;
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const lagBreak = 8;//Add a little delay to compensate the lag. You can try to play with this one
+const lagBreak = 5;//Add a little delay to compensate the lag. You can try to play with this one
 
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const toolType = "pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
 const blockHardness = 3; // 1.5 for stone like, 0.5 for dirt like
 const solidBlock = "minecraft:cobbled_deepslate" // The block you'll use to fill the holes under you
 const toDump = ["minecraft:stone","minecraft:cobblestone","minecraft:tuff","minecraft:moss_block","minecraft:diorite","minecraft:granite","minecraft:smooth_basalt","minecraft:cobbled_deepslate","minecraft:calcite","minecraft:andesite","minecraft:deepslate"]
-
-/*4x3 wall
-const pitchList = [-70,0,70,-70,0,70,-70,0,70,-70,0,70,];
-const yawList = [-70,-82,-70,-50,-75,-50,0,0,0,35,70,35,];
-*/
-
-/* 3x3 wall*/
-const pitchList = [-70,0,70,-70,0,70,-70,0,70,];
-const yawList = [-50,-75,-50,0,0,0,35,70,35,];
+const tunnelHeight = 4;
+const tunnelWidth = 5;
 
 
 
 // Don't touch those variables, they are used during the script to track execution
 var currentX; //X at the start of the script
-var currentY; //Y at the start of the script
+var currentZ; //Y at the start of the script
 var prevX ; //Allows to check if X changed
 var prevZ ; //Allows to check if Z changed
 var stuck ; //Check if you are stuck in a block
 var stuckHit=0 ;// If you are stuck on a block you need to break, make the breaktime higher each try
 var breakTime; //The break time for a regular block
+const tunnelY = p.getY();
+const tunnelRight = Math.floor(tunnelWidth/2);
+const tunnelLeft = tunnelRight - (tunnelWidth-1);
+
 const startTime = Date.now();
 
 function equip(item,slot) { // Equip an item in a certain slot
@@ -83,6 +82,19 @@ function lookAtCenter(x, z) {// Look at the center of a block
     p.lookAt(x+0.5,p.getY()+0.5, z+0.5);
 }
 
+function lookatSide(x,y,z,dir){ //Look at the side of a block you want to break, where the x or z is the line you are standing, not the one you are breaking
+    if (dir==-1) {
+        x=x+0.5
+    } else if (dir==0) {
+        z=z+0.5
+    } else if (dir==1) {
+        x=x-0.5
+    } else {
+        z=z-0.5
+    }
+    p.lookAt(x+0.5,y+0.5,z+0.5)
+}
+
 function walkTo(x, z,sneak) { // Walk to the center of a block
     lookAtCenter(x,z);
     if (sneak) {
@@ -100,23 +112,22 @@ function walkTo(x, z,sneak) { // Walk to the center of a block
     
 }
 
-function toolSwitch(){ //Function to switch to the lowest durability axe still usable
+function unSilktoolSwitch(){ //Function to switch to the lowest durability axe still usable
 
     toolList = inv.findItem("minecraft:diamond_pickaxe")  
     var usableSlot = 0;
     lowestToolDamage = 10000 ;
     for (i=0;i<toolList.length;i++) { // This needs to be correct as well, it's not really efficient to check all tools
         currentToolDamage = inv.getSlot(toolList[i]).getMaxDamage()-inv.getSlot(toolList[i]).getDamage() 
-        if (currentToolDamage>=damageTreshhold) { // The tool has health remaining
+        if ((currentToolDamage>=damageTreshhold)&&(inv.getSlot(toolList[i]).getEnchantment("Silk Touch")==null)) { // The tool has health remaining and doesn't have silktouch
             if (currentToolDamage<lowestToolDamage) {
                 usableSlot = toolList[i];
                 lowestToolDamage = currentToolDamage;
             }
-            
         } 
     }
     if (usableSlot==0) {
-        Chat.log("You are out of tools")
+        Chat.log("You are out of not ST tools")
         throw("No more tools to use")
     }
     inv.swapHotbar(usableSlot,0);
@@ -187,22 +198,26 @@ function eat() {
 function mineAWall(){
     KeyBind.keyBind("key.attack", true);
     KeyBind.keyBind("key.sneak", true);
-
-    for (let i=0;i<pitchList.length;i++) {
-        p.lookAt(dir*90+pitchList[i],yawList[i]);
-        Client.waitTick(breakTime)
-        var textString = Chat.getHistory().getRecvLine(0).getText().getString();
-        if (textString.startsWith("A SimpleAdmin")) {
-            Chat.log("Switching");
-            inv.setSelectedHotbarSlotIndex(2);
-            Client.waitTick(breakTime)
-            inv.setSelectedHotbarSlotIndex(0);
+    currentX = Math.floor(p.getX());
+    currentZ = Math.floor(p.getZ());
+    for (let i=tunnelLeft;i<=tunnelRight;i++) {
+        for (let j=0;j<tunnelHeight;j++) {
+            if ((dir==-1)||(dir==1)){
+                lookatSide(currentX,tunnelY+j,currentZ+i,dir)
+            } else {
+                lookatSide(currentX+i,tunnelY+j,currentZ,dir)
+            }
+            Client.waitTick(breakTime);
+            var textString = Chat.getHistory().getRecvLine(0).getText().getString();
+            if (textString.startsWith("A SimpleAdmin")) {
+                Chat.log("Switching");
+                inv.setSelectedHotbarSlotIndex(2);
+                Client.waitTick(Math.floor(1.5*breakTime));
+                inv.setSelectedHotbarSlotIndex(0);
+            }
         }
-
     }
-    KeyBind.keyBind("key.attack", false);
-    KeyBind.keyBind("key.forward", true);
-    
+    KeyBind.keyBind("key.attack", false);    
 }
 
 function stuckType() { // Tell if you are bumping on a block or stuck on the edge of a block
@@ -239,14 +254,12 @@ function stuckType() { // Tell if you are bumping on a block or stuck on the edg
             type = "hole"
         }
     }
-    Chat.log(type);
     return type
 
 }
 
 function unstuck() { //If you are stuck, you are either hitting a block, or on the edge of a block
     KeyBind.keyBind("key.forward", false);
-    Chat.log("youstuck")
     if (stuckType()=="hole") {
         p.lookAt((dir-2)*90,80);
         Client.waitTick();
@@ -262,7 +275,6 @@ function unstuck() { //If you are stuck, you are either hitting a block, or on t
         Client.waitTick(breakTime*stuckHit);
         var textString = Chat.getHistory().getRecvLine(0).getText().getString();
         if (textString.startsWith("A SimpleAdmin")) {
-            Chat.log("In here")
             inv.setSelectedHotbarSlotIndex(2);
             Client.waitTick(breakTime*stuckHit)
             inv.setSelectedHotbarSlotIndex(0);
@@ -283,12 +295,12 @@ function walkForward(){
     prevX = originX;
     prevZ = originZ;
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick();
-    while ((Math.abs(originX-p.getX())<0.95)&&(Math.abs(originZ-p.getZ())<0.95)) {
+    Client.waitTick(5);
+    while (p.distanceTo(originX,tunnelY,originZ)<0.99) {
         prevZ = p.getZ();
         prevX = p.getX();
-        Client.waitTick();
-        if ((p.getZ()==prevZ)&&(p.getX()==prevX)) {
+        Client.waitTick(2);
+        if (p.distanceTo(prevX,tunnelY,prevZ)<0.05) {
             stuckHit ++;
             unstuck();
         } else {
@@ -301,22 +313,23 @@ function walkForward(){
 function placePerfect(){
     walkTo(Math.floor(p.getX()),Math.floor(p.getZ()),true);
     p.lookAt(dir*90,0);
-    KeyBind.keyBind("key.forward", true);
-    Client.waitTick(10);
-    KeyBind.keyBind("key.forward", false);
+}
+
+function init(){
+    placePerfect();
+    unSilktoolSwitch();
+    silkTouchSwitch();
+    inv.setSelectedHotbarSlotIndex(0);
+    equip(solidBlock,1);// Put the solid block in the second slot
 }
 
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
-    placePerfect();
-    toolSwitch();
-    silkTouchSwitch();
-
-    inv.setSelectedHotbarSlotIndex(0);
-    equip(solidBlock,1);// Put the solid block in the second slot
+    init();
     for (let i=0;i<tunnelLength;i++) {
         mineAWall();
         walkForward();
     }
 }
+
 
 start();
