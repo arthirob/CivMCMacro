@@ -59,6 +59,9 @@ function toolCheck() { // Check if your tool can be used, and if not, switch it
 }
 
 function eat() {
+    if (inv.getSlot(37).getItemId()!=foodType) {
+        equip(foodType,1);
+    }
     if (p.getFoodLevel()<19) {
         inv.setSelectedHotbarSlotIndex(1);
         KeyBind.keyBind("key.use", true);
@@ -371,4 +374,4 @@ function start(){
     }
 }
 
-start();
+eat();
