@@ -40,8 +40,6 @@ function softLook(yawGoal,pitchGoal) {
     }
 }
 
-
-
 function smoothBlockLook(x,y,z){
     deltaX = x - p.getX();
     deltaY = y - (p.getY()+1.62); //Add the height of the eyes

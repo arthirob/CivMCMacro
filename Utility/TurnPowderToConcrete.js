@@ -2,7 +2,7 @@
 // To make the floor, start on the north west corner, define the size of it, and have your mats in the first slot
 const p = Player.getPlayer() ;
 const inv = Player.openInventory();
-const color = "white"
+const color = "orange"
 
 //No touching below this point
 const concreteBlock = "minecraft:"+color+"_concrete_powder"

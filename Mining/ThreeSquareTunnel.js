@@ -27,7 +27,7 @@ const blockHardness = 3; // 1.5 for stone like, 0.5 for dirt like
 const solidBlock = "minecraft:cobbled_deepslate" // The block you'll use to fill the holes under you
 const toDump = ["minecraft:stone","minecraft:cobblestone","minecraft:tuff","minecraft:moss_block","minecraft:diorite","minecraft:granite","minecraft:smooth_basalt","minecraft:cobbled_deepslate","minecraft:calcite","minecraft:andesite","minecraft:deepslate"]
 const tunnelHeight = 4;
-const tunnelWidth = 5;
+const tunnelWidth = 4;
 
 
 

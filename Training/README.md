@@ -32,7 +32,7 @@ Start from the green concrete, reach the red concrete. You are allowed to check 
 Start from the green concrete, reach the red concrete. You are allowed to check the red concrete coordinate before starting the script. You are not allowed to check anything about light blue concrete. You can place dirt blocks. 
 
 ### Challenge 6
-Walk on all the orange square. You are allowed to check any coordinate you want. Start in the north west corner,
+Walk on all the orange square. You are allowed to check any coordinate you want. Start in the south west corner,
 
 ## Part 2 : Placing
 

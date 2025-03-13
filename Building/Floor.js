@@ -3,13 +3,13 @@
 
 
 //Only edit those five variable, the rest don't touch
-const floorSide = -1; //1 if you want your floor on the right, -1 for on the left
-const floorLength = 30; //Your floor length
-const floorWidth = 20; // Your floor width
+const floorSide = 1; //1 if you want your floor on the right, -1 for on the left
+const floorLength = 100; //Your floor length
+const floorWidth = 4; // Your floor width
 
 const torchGridX = 0; //The x distance between your torches
 const torchGridZ = 0; //The z distance between your torches
-const speed = 0; //1 if you have speed 1, 0 if you have speed 0
+const speed = 1; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
 const p = Player.getPlayer() ;

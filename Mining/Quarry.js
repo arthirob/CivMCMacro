@@ -1,7 +1,10 @@
 /*Script to dig a rectangle to bedrock
 V1.1 by arthirob, 25/10/2024 
 
+The hotbar should be : Tool ; fillblock ; torches ; food ; chest ; gravel
+
 Things to improve
+When going down, you usually mine 3 blocks and pla
 */
 
 
@@ -10,33 +13,34 @@ Things to improve
 // JS macro stuff, don't touch
 const p = Player.getPlayer() ;
 const im = Player.getInteractionManager();
-const inv = Player.openInventory();
+var inv = Player.openInventory();
 
 //What you should modify, your holes coordinate.
-const xWest = -1; // The X coordinate of your starting point
-const zSouth = -27; // The Z coordinate of your starting point
+const xWest = 968; // The X coordinate of your starting point
+const zSouth = 997; // The Z coordinate of your starting point
 const yStop = -50; // The y layer at which you want to stop
-const North = 20; // The number of block you want to dig to the north of the startpoint
-const East = 20; // The number of block you want to dig to the east of the startpoint
+const North = 7; // The number of block you want to dig to the north of the startpoint
+const East = 4; // The number of block you want to dig to the east of the startpoint
+const storeMats = false;
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
-const lagBreak = 7;//Add a little delay to compensate the lag. You can try to play with this one
+const lagTick = 6;//Add a little delay to compensate the lag. You can try to play with this one
 
 
 const torchGridX = 4; //The x distance between your torches
 const torchGridZ = 4; //The z distance between your torches
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const toolType = "pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
-const blockHardness = 1.5; // 1.5 for stone like, 0.5 for dirt like
+const blockHardness = 1.5; // 1.5 for stone like, 0.5 for dirt like, 3 for deepslate
 const solidBlock = "minecraft:cobblestone" // The block you'll use to fill the holes under you
-const toDump = ["minecraft:stone","minecraft:cobblestone","minecraft:tuff","minecraft:moss_block","minecraft:diorite","minecraft:granite","minecraft:smooth_basalt","minecraft:cobbled_deepslate","minecraft:calcite","minecraft:andesite","minecraft:deepslate"]
+const toDump = ["minecraft:dirt","minecraft:stone","minecraft:cobblestone","minecraft:tuff","minecraft:moss_block","minecraft:diorite","minecraft:granite","minecraft:smooth_basalt","minecraft:cobbled_deepslate","minecraft:calcite","minecraft:andesite","minecraft:deepslate"]
 
 
 
 // Don't touch those variables, they are used during the script to track execution
 var currentX; //X at the start of the script
 var currentZ; //Z at the start of the script
-var currentY; //Y at the start of the script
+var currentY; //Y at the current layer
 var dir; // 1 for north, 0 for south
 var keepSolid;//The number of solid blocks stacks you want to keep
 var oldDir; //Store the old direction when you need to modify the dir variable (at the end of a line)
@@ -51,7 +55,7 @@ const startTime = Date.now();
 function equip(item,slot) { // Equip an item in a certain slot
     list = inv.findItem(item);
     if (list.length==0) {
-        throw("No more mats")
+        throw("No more "+item)
     }
     inv.swapHotbar(list[0],slot);
     Client.waitTick();
@@ -86,13 +90,13 @@ function lookAtCenter(x, z) {// Look at the center of a block
 }
 
 function lookAtBlock(x, z) {// Look at the center of a block
-    p.lookAt(x+0.5,p.getY()+0.8, z+0.5);
+    p.lookAt(x+0.5,p.getY()+1, z+0.5);
 }
 
 function placeTorch(x,z){ // Place a torch if it follows the torch grid
     if (((x-xWest)%torchGridX==0)&&((z-zSouth)%torchGridZ==0)) {
         p.lookAt(x+0.5,p.getY(),z+0.5);
-        placeFill(2);
+        placeFill(3);
         inv.setSelectedHotbarSlotIndex(0);  
     }
 }
@@ -142,7 +146,7 @@ function toolSwitch(){ //This is to be corrected... For some reasons, maths don'
     if (enchantHelper != null) {
         effBonus = (enchantHelper.getLevel())**2+1;
     }
-    breakTime = Math.ceil(1/((8+effBonus)/(30*blockHardness)))+lagBreak //
+    breakTime = Math.ceil(1/((8+effBonus)/(30*blockHardness)))+lagTick //
 }
 
 function dumpBlock() { //Throw the useless blocks, keep a few stacks of the item you need
@@ -166,6 +170,72 @@ function dumpBlock() { //Throw the useless blocks, keep a few stacks of the item
     }    
 }
 
+function placeChest(){
+    cornerX = Math.floor(p.getX())
+    cornerZ = Math.floor(p.getZ())
+    walkTo(cornerX-2,cornerZ);
+    lookAtCenter(cornerX+1,cornerZ);
+    placeFill(4);
+    if (East%2==1) {
+        lookAtCenter(cornerX+1,cornerZ+1);
+    } else {
+        lookAtCenter(cornerX+1,cornerZ-1);
+    }
+    placeFill(4);
+    emptyBlock(cornerX,cornerZ);
+}
+
+function emptyBlock(cornerX,cornerZ) { //Store the useless blocks, and keep a few stacks of the item you need
+    lookAtCenter(cornerX,cornerZ);
+    Client.waitTick();
+    p.interact();
+    Client.waitTick(lagTick);
+    inv = Player.openInventory();
+    Client.waitTick(10);
+    if (inv.getContainerTitle()=="Large Chest") {// You managed to open the chest
+        keepSolid = 0;
+        for (let i = 54; i <= 89 ; i++) {
+            if (toDump.includes(inv.getSlot(i).getItemID())){
+                if ((inv.getSlot(i).getItemID()==solidBlock)) {
+                    if (keepSolid>5) {
+                        inv.quick(i)
+                        Client.waitTick();
+                    } else {
+                        keepSolid++;
+                    }
+                } else {
+                    inv.quick(i)
+                    Client.waitTick();
+                }
+            }
+        }
+    } else if (inv.getContainerTitle()=="Chest") {
+        keepSolid = 0;
+        for (let i = 27; i <= 62 ; i++) {
+            if (toDump.includes(inv.getSlot(i).getItemID())){
+                if ((inv.getSlot(i).getItemID()==solidBlock)) {
+                    if (keepSolid>5) {
+                        inv.quick(i)
+                        Client.waitTick();
+                    } else {
+                        keepSolid++;
+                    }
+                } else {
+                    inv.quick(i)
+                    Client.waitTick();
+                }
+            }
+        }
+    } else {
+        Chat.log("Chest could not be opened, skipping this one")
+    }
+    Client.waitTick(lagTick)
+    inv.close();
+    Client.waitTick(lagTick)
+    inv = Player.openInventory();
+}
+
+
 function eat() {
     if (p.getFoodLevel()<16) {
         const foodList = inv.findItem(foodType);
@@ -183,9 +253,11 @@ function eat() {
 }
 
 function mineOne(x,z) { // Mine the block at this z value and walk to it
-    lookAtBlock(x,z);
     toolSwitch();
     KeyBind.keyBind("key.attack", true);
+    lookAtBlock(x,z);
+    Client.waitTick(breakTime);
+    lookAtBlock(x,z);
     Client.waitTick(breakTime);
     KeyBind.keyBind("key.attack", false);
     KeyBind.keyBind("key.forward", true);
@@ -219,6 +291,7 @@ function unstuck(x,z) { //If you are stuck, you are either hitting a block, or o
         var dist = (Math.abs(p.getX()-0.5-x))
     }
     if (dist <0.5) {
+        Chat.log("Stuck in a hole")
         p.lookAt((dir-1)*180,80);
         Client.waitTick(2);
         inv.setSelectedHotbarSlotIndex(1);
@@ -228,6 +301,8 @@ function unstuck(x,z) { //If you are stuck, you are either hitting a block, or o
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(0);
     } else {
+        Chat.log("Stuck in a front of a block")
+
         KeyBind.keyBind("key.attack", true);
         Client.waitTick(breakTime*stuckHit);
         KeyBind.keyBind("key.attack", false);
@@ -259,8 +334,11 @@ function mineLevel() { // Mine a full level
     KeyBind.keyBind("key.sneak", false);
     KeyBind.keyBind("key.attack", false);
     KeyBind.keyBind("key.forward", false);
-    dumpBlock();
+    if (storeMats){
+        placeChest();
+    }
     eat();
+    inv.setSelectedHotbarSlotIndex(0);
 }
 
 function downLevel() { //Go down a level
@@ -286,11 +364,60 @@ function downLevel() { //Go down a level
     }
 }
 
+function downLevel2() { //Go down a level
+    walkTo(xWest+1,zSouth);
+    prevY = p.getY();
+    p.lookAt(xWest+0.5,p.getY()-1,zSouth+0.5);
+    KeyBind.keyBind("key.attack", true);
+    Client.waitTick(breakTime*2);
+    KeyBind.keyBind("key.attack", false);
+    p.lookAt(90,0);
+    KeyBind.keyBind("key.forward", true);
+    KeyBind.keyBind("key.sneak", true);
+    Client.waitTick(10);
+    KeyBind.keyBind("key.forward", false);
+    Client.waitTick(2);
+    p.lookAt(xWest+1,p.getY()-0.5,zSouth+0.5);
+    Client.waitTick(20);
+    gravelNumber = inv.getSlot(41).getCount();
+    placeFill(5);
+    Client.waitTick(lagTick)
+    while (gravelNumber!= inv.getSlot(41).getCount()){
+        gravelNumber = inv.getSlot(41).getCount();
+        placeFill(5);
+        Client.waitTick(10);
+    }
+    walkTo(xWest,zSouth);
+    p.lookAt(90,90);
+    KeyBind.keyBind("key.attack", true);
+    Client.waitTick(30);
+    KeyBind.keyBind("key.attack", false);
+    Client.waitTick(lagTick);
+    KeyBind.keyBind("key.attack", true);
+    Client.waitTick(30);
+    KeyBind.keyBind("key.attack", false);
+    Client.waitTick(10);
+    inv.setSelectedHotbarSlotIndex(0);
+    if (currentY-p.getY()!=2){
+        Chat.log("You failed the descentn trying again");
+        p.lookAt(-90,0);
+        KeyBind.keyBind("key.forward", true);
+        KeyBind.keyBind("key.jump", true);
+        Client.waitTick(5)
+        KeyBind.keyBind("key.jump", false);
+        Client.waitTick(15);
+        downLevel2();
+    } else {
+        Chat.log("Starting new level")
+    }
+    currentY = p.getY();
+}
+
 
 function mineAll() {
     while (p.getY()>yStop) {
         mineLevel();
-        downLevel();
+        downLevel2();
     }
     mineLevel(); //Not nice to do the same call out of the loop, but I can't find a better solution yet
     walkTo(xWest,zSouth);
@@ -299,21 +426,27 @@ function mineAll() {
     Chat.say("/logout");
 }
 
+function init(){
+    toolSwitch();
+    Client.grabMouse();
+    inv.setSelectedHotbarSlotIndex(0);
+    equip(solidBlock,1);// Put the solid block in the second slot
+    equip(foodType,2)
+    equip("minecraft:torch",3);
+    if (storeMats){
+        equip("minecraft:chest",4);
+    }
+    equip("minecraft:gravel",5);
+}
+
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
     currentX = Math.floor(p.getX());
     currentZ = Math.floor(p.getZ());
-
+    currentY = p.getY();
     //First check the position
     if ((xWest<=currentX)&&(currentX<=xWest+East)&&(zSouth-North<=currentZ)&&(currentZ<=zSouth)) { // Check if you are inside the farm
-        if ((currentX==xWest)&&(currentZ==zSouth)) {
-            toolSwitch();
-            inv.setSelectedHotbarSlotIndex(0);
-            equip(solidBlock,1);// Put the solid block in the second slot
-            equip("minecraft:torch",2);
+            init();
             mineAll();
-        } else {
-            Chat.log("Please, start in the south west corner, and dig one block down");
-        }
      } else {
         Chat.log("You are not in the area, make sure you entered the good values in the variable");
     }

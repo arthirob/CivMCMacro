@@ -7,7 +7,7 @@ const xLodestone = 4888;
 const zLodestone = -6316; 
 const torchGridX = 0; //The x distance between your torches
 const torchGridZ = 0; //The z distance between your torches
-const speed = 0; //1 if you have speed 1, 0 if you have speed 0
+const speed = 2; //1 if you have speed 1, 0 if you have speed 0
 
 //NO TOUCH AFTER THIS POINT
 const p = Player.getPlayer() ;
@@ -16,7 +16,7 @@ const inv = Player.openInventory();
 
 var prevZ;
 var prevX;
-
+var refill;
 var dir;
 
 function lookAtCenter(x, z) {// Look at the center of a block
@@ -40,7 +40,6 @@ function walkSlowTo(x, z) { // Walk to the center of a block
         Time.sleep(10);
     }
     KeyBind.keyBind("key.forward", false);
-    KeyBind.keyBind("key.sneak", false);
 
     Client.waitTick(3);
     
@@ -59,10 +58,16 @@ function placeTorch(x,z){ // Place a torch if it follows the torch grid
 
 function placeFill(i) { //Autofill the i slot
     item = inv.getSlot(36+i).getItemID();
+    if (inv.getSlot(36+i).getCount()==1) {
+        KeyBind.keyBind("key.back", false);
+        refill = true;
+    } else {
+        refill = false;
+    }
     inv.setSelectedHotbarSlotIndex(i);
     p.interact();
-    Client.waitTick();
-    if (inv.getSlot(36+i).getCount()==0) { //i slot empty
+    if (refill) { //i slot empty
+        Client.waitTick()
         list = inv.findItem(item);
         if (list.length==0) {
             KeyBind.keyBind("key.back", false);
@@ -71,12 +76,11 @@ function placeFill(i) { //Autofill the i slot
             Client.waitTick(3);
             KeyBind.keyBind("key.forward", false);
             KeyBind.keyBind("key.sneak", false);
-            Chat.log("Out of materials")
-            World.playSound("entity.elder_guardian.curse", 200);
             throw("No more mats")
         }
         inv.swapHotbar(list[0],i);
         Client.waitTick();
+        KeyBind.keyBind("key.back", true);
     }
     if (inv.findItem("minecraft:stone").length==0){
         KeyBind.keyBind("key.back", false);
@@ -90,32 +94,25 @@ function placeFill(i) { //Autofill the i slot
     }
 }
 
-function needLine(length,originX,originZ) { //Return true if you need to continue the line, false otherwise
-    return ((Math.abs((originX-p.getX()))+Math.abs((originZ-p.getZ())))<(length-1))
-}
-
 function line(length) {
-    originX = p.getX();
-    originZ = p.getZ();
+    originX = Math.floor(p.getX())+0.5;
+    originZ = Math.floor(p.getZ())+0.5;
     dir = Math.floor((p.getYaw()+45)/90)*90;
     p.lookAt(dir,80);
     KeyBind.keyBind("key.sneak", true);
     KeyBind.keyBind("key.back", true);
-    while (needLine(length,originX,originZ)){
+    while (p.distanceTo(originX,p.getY(),originZ)<(length-1)){
         prevX = p.getX();
         prevZ = p.getZ();
         Client.waitTick();
         if ((prevX==p.getX())&&(prevZ==p.getZ())) {
             placeFill(0);
-            KeyBind.keyBind("key.sneak", false);
-            Client.waitTick(5-2*speed)
-            KeyBind.keyBind("key.sneak", true);
-            placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+            
         }
     }
     KeyBind.keyBind("key.back", false);
     KeyBind.keyBind("key.forward", true);
-    Client.waitTick(12-4*speed);
+    Client.waitTick(12-3*speed);
     KeyBind.keyBind("key.forward", false);
 }
 

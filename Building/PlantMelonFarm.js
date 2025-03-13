@@ -73,32 +73,34 @@ function lodestoneUp(goingUp) {//If true, go up, otherwise go down
 }
 
 
-function tiltAndFill() {
-    if ((p.getY()%1)==0) {
-        p.interact();
-        Client.waitTick(4);
-    } else {
-        p.interact();
-        if (inv.getSlot(45).getCount()==0) { //i slot empty
+function refill() {
+    if (inv.getSlot(45).getCount()==0) { //i slot empty
             equip(seed,45);
-        }
     }
 }
 
 function tiltLine(dir,length){
     p.lookAt(90*dir,90);
+    Client.waitTick();
+    p.interact();
+    Client.waitTick(10)
+    p.interact();
+    refill();
+    p.lookAt(90*dir,45);
     originX = Math.floor(p.getX())+0.5;
     originZ = Math.floor(p.getZ())+0.5;
     KeyBind.keyBind("key.forward", true);
     KeyBind.keyBind("key.sneak", true);
+    KeyBind.keyBind("key.use", true);
+
     while (p.distanceTo(originX,p.getY(),originZ)<(length-1)) {
-        tiltAndFill();
-        Client.waitTick()
+        refill();
+        Client.waitTick();
     }
     KeyBind.keyBind("key.forward", false);
-    tiltAndFill();
-
     KeyBind.keyBind("key.sneak", false);
+    KeyBind.keyBind("key.use", false);
+
     toolCheck();
 
 }
