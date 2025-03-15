@@ -68,15 +68,13 @@ function emojiRelay(int) {
     if (int == 0){
         return(":red_square: : "+int+" recipe")
     }
-    if ((int == 1) || (int ==2)){
+    if (int <20){
         return (":orange_square: : "+int+" recipes")
     } else {
         return (":white_check_mark: : "+int+" recipes")
 
     }
 }
-
-let web = "https://discord.com/api/webhooks/1311751870372515963/J5sqWHq1tdhMu62Cb36rIE-m7ljedHkMYNU6UYlElTwiEyRfpk2efYFlcgqB9IJdclW9";
 
 function SendWebhook(username, message) {
     let data = {
