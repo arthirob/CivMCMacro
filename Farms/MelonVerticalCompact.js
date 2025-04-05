@@ -374,4 +374,4 @@ function start(){
     }
 }
 
-eat();
+start();

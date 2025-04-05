@@ -1,0 +1,1 @@
+Chat.log(KeyBind.getKeyBindings());

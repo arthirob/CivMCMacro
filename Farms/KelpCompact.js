@@ -316,5 +316,5 @@ function start() {
         Chat.log("Please, start in the lodestone")
     }
 }
-currentChest = 1;
-harvestKelp();
+
+start();
