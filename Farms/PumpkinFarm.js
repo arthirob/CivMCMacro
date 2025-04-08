@@ -1,8 +1,9 @@
 /*
 Script to harvest a pumpkin farm
-V1.0 by arthirob 05/03/2024
+V1.1 by arthirob 08/04/2024
 
 Things to improve
+Makes it auto compact at the end
 */
 
 // Constant and variable declaration
@@ -15,10 +16,15 @@ const startTime = Date.now();
 const firstButtonX = 4443 ;
 const firstButtonZ = -6780 ;
 const buttonDist = 12;
-const northBorder = -7025 ; //The z value until which you need to start walking
+const northBorder = -7035 ; //The z value until which you need to start walking
 const southBorder = -6790 ;
 const simultanousRow = 2;
 const totalRow = 8;
+
+
+const steps = 15;
+const coeff = makeArray(steps);
+const sleepTime = 5;
 
 var currentRow; //An integer of the row you are in
 
@@ -76,13 +82,14 @@ function lookAtCenter(x, z) {// Look at the center of a block
 
 function walkTo(x, z,run) { // Walk to the center of a block
     lookAtCenter(x,z);
+    Client.waitTick(10);
     KeyBind.keyBind("key.forward", true);
     if (run) {
         KeyBind.keyBind("key.sprint", true);
 
     }
     while ((Math.abs(p.getX() - x - 0.5) > 0.1 || Math.abs(p.getZ() - z - 0.5 ) > 0.1)){
-        lookAtCenter(x,z);// Allow trajectory correction
+        p.lookAt(x+0.5,p.getY(),z+0.5);// Allow trajectory correction
         Client.waitTick();
     }
     KeyBind.keyBind("key.forward", false);
@@ -113,7 +120,10 @@ function followTheMachine(row) { // Follow the machine until the north of the fa
     softLook(0,0);
     KeyBind.keyBind("key.forward", false);
     while (p.getZ()<(southBorder)) {
-        Client.waitTick();
+        KeyBind.keyBind("key.forward", true);
+        Client.waitTick(8);
+        KeyBind.keyBind("key.forward", false);
+        Client.waitTick(11);
     }
     walkTo(firstButtonX+row*buttonDist+2,firstButtonZ+1,false)
 }
