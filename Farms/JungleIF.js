@@ -376,14 +376,14 @@ function start() { //Allows to start back where you were. Finish the row, and pl
     currentZ = Math.floor(p.getZ());
 
     //First check the position
-    if (((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth))||(currentX==originalXEast)) { // Check if you are inside the farm
+    if (((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth))||(currentX==xEast)) { // Check if you are inside the farm
         if (currentZ == zNorth) { // Correct the yaw if you are at the end of a row
             p.lookAt(0,0);
         }
         if (currentZ == zSouth) {
             p.lookAt(180,0);
         }
-        if ((((currentX-xWest)%rowSpace)==0)||(currentX==originalXEast)) { // Start in a row
+        if ((((currentX-xWest)%rowSpace)==0)||(currentX==xEast)) { // Start in a row
                 if (((currentZ-zNorth)%treeSpace)==0) {
                 dir = (Math.floor((p.getYaw()+450)/180))%2; //The 450 is too get a positive yaw
                 //Now prepare the hotbar
