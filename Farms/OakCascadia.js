@@ -38,7 +38,7 @@ const damageTreshhold=20; //The damage at which you want to stop using your tool
 const toDump = [`minecraft:${woodType}_log`,`minecraft:stripped_${woodType}_log`,`minecraft:${woodType}_leaves`,`minecraft:stick`];
 const fastMode = true; //Switch to true for faster harvest. Will consume more shears
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
-const toolType = "minecraft:diamond_hoe"
+const toolType = "minecraft:iron_hoe"
 const runningPause = 4;
 var breakTime;
 
@@ -243,15 +243,15 @@ function notUnderLog(coord,axisX) {//Return true if you are not under the log
 function sortLeaves() { //Check if you cut leaves at some point. If yes, there's no more logs to cut
     originalDamage = inv.getSlot(39).getDamage()
     leafTry = 0;
-    while ((originalDamage==inv.getSlot(39).getDamage())&&(leafTry<4)){
+    while ((originalDamage==inv.getSlot(39).getDamage())&&(leafTry<3)){
         inv.setSelectedHotbarSlotIndex(3);
-        Client.waitTick(2);
+        Client.waitTick(lagTick);
         im.attack();
-        Client.waitTick(2);
+        Client.waitTick(lagTick);
         if (originalDamage==inv.getSlot(39).getDamage()) {
             inv.setSelectedHotbarSlotIndex(0);
             KeyBind.keyBind("key.attack",true);
-            Client.waitTick(breakTime);
+            Client.waitTick(breakTime+lagTick);
             KeyBind.keyBind("key.attack",false);
             Client.waitTick();
             leafTry++;
