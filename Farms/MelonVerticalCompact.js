@@ -12,8 +12,8 @@ const zChestCompactor= -6314;
 const xFurnaceCompactor = 4894;
 const zFurnaceCompactor = -6314;
 const bunkerY = -62;
-const lagTick = 5;
-const compactEveryLevel = 4;
+const lagTick = 3;
+const slotNeeded = 7; //The amount of free slot you need to do a level
 const foodType = "minecraft:baked_potato";
 const damageTreshhold = 40;
 const discordGroup = 'FU-Bot';
@@ -32,7 +32,6 @@ var originX;
 var originZ;
 var slots;
 var currentLevel;
-var harvestedLevel;
 var dir;
 
 const startTime = Date.now();
@@ -85,19 +84,21 @@ function walkTo(x, z) { // Walk to the center of a block. If boolean attack is t
             p.attack();
             Client.waitTick(lagTick);
             KeyBind.keyBind("key.forward", true);
-
-
         }
     }
     KeyBind.keyBind("key.forward", false);
-    KeyBind.keyBind("key.sneak", false);
-
     Client.waitTick(3);
-    
 }
 
-function move(x,z,attack) { //Make you move in a x and z direction
-    walkTo(Math.floor(p.getX())+x,Math.floor(p.getZ()+z),attack)
+function move(x,z,safe) { //Make you move in a x and z direction
+    if (!safe) {
+        safeSneak();
+    }
+    walkTo(Math.floor(p.getX())+x,Math.floor(p.getZ()+z),true)
+    if (!safe) {
+            Chat.log("Out of safe")
+            KeyBind.keyBind("key.sneak", false);
+    }
 }
 
 function align(){
@@ -160,9 +161,20 @@ function refill() {
     }
 }
 
+function countFreeSlot(){
+    const slots = inv.getSlots('main', 'hotbar');
+    let total = 0;
+    for (slot of slots){
+        if (inv.getSlot(slot).getItemId()=="minecraft:air") {
+            total++
+        }
+    }
+    return total;
+}
+
 function toogleSprint() {
     KeyBind.keyBind("key.sprint", true);
-    Client.waitTick();
+    Client.waitTick(3);
     KeyBind.keyBind("key.sprint", false);
 }
 
@@ -192,8 +204,18 @@ function toolSwitch() { // Function to equip a tool with the silk touch enchant
     inv.setSelectedHotbarSlotIndex(0);
 }
 
+function safeSneak() {
+    if (p.isSprinting()){
+        Chat.log("in da bool");
+        KeyBind.keyBind("key.forward", false);
+        Client.waitTick(2);
+        KeyBind.keyBind("key.forward", true);
+    }
+    KeyBind.keyBind("key.sneak", true);
 
-function harvestLine(length,dir){ //Harvest a line in a dir
+}
+
+function harvestLine(length,dir,safe){ //Harvest a line in a dir. If set is true, no need to sneak at the end
     align();
     originX = Math.floor(p.getX())
     originZ = Math.floor(p.getZ());
@@ -201,10 +223,14 @@ function harvestLine(length,dir){ //Harvest a line in a dir
     p.lookAt(dir*90,45);
     softLook(dir*90,8);
     KeyBind.keyBind("key.forward", true);
+    Client.waitTick(2);
     toogleSprint();
     while (p.distanceTo(originX,p.getY(),originZ)<(length-1)){
         currentX = p.getX();
         currentZ = p.getZ();
+        if ((p.distanceTo(originX,p.getY(),originZ)>(length-2)&&(!safe))){
+            safeSneak();
+        }
         if (p.distanceTo(originX,p.getY(),originZ)>(length-4)){
             KeyBind.keyBind("key.attack", false);
         }
@@ -226,53 +252,54 @@ function harvestLine(length,dir){ //Harvest a line in a dir
 
         }
     }
+    KeyBind.keyBind("key.sneak", false);
     KeyBind.keyBind("key.forward", false);
     KeyBind.keyBind("key.attack", false);
     toolCheck();
 }
 
-function harvestLevel(){//Harvest a full level, line by line
+function harvestLevel(){//Harvest a full level, line by line   
     currentLevel = p.getY();
     walkTo(xLodestone,zLodestone);
-    move(-7,0);
-    move(0,-2);
-    harvestLine(25,1);
-    move(-10,4);
-    harvestLine(41,-1);
-    move(-2,1);
-    harvestLine(40,1);
-    move(0,4);
-    harvestLine(41,-1);
-    move(0,1);
-    harvestLine(40,1);
-    move(0,4);
-    harvestLine(41,-1);
-    move(-2,-12);
-    harvestLine(29,2);
-    move(1,0);
-    harvestLine(29,0);
-    move(4,0);
-    harvestLine(31,2);
-    move(1,0)
-    harvestLine(32,0);
-    move(4,0);
-    harvestLine(31,2);
-    move(1,0);
-    harvestLine(28,0);
-    move(4,-7);
-    harvestLine(20,2);
-    move(1,0);
-    harvestLine(20,0);
-    harvestedLevel++;
+    move(-7,0,true);
+    move(0,-2,true);
+    harvestLine(25,1,true);
+    move(-10,4,true);
+    harvestLine(41,-1,true);
+    move(-2,1,true);
+    harvestLine(40,1,false);
+    move(0,4,false);
+    harvestLine(41,-1,true);
+    move(0,1,true);
+    harvestLine(40,1,false);
+    move(0,4,false);
+    harvestLine(41,-1,true);
+    move(-2,-12,true);
+    harvestLine(29,2,true);
+    move(1,0,true);
+    harvestLine(29,0,true);
+    move(4,0,true);
+    harvestLine(29,2,true);
+    move(1,-2,false)
+    harvestLine(32,0,false);
+    move(4,0,false);
+    harvestLine(31,2,false);
+    move(1,0,false);
+    harvestLine(28,0,true);
+    move(4,-7,true);
+    harvestLine(20,2,false);
+    move(1,0,false);
+    harvestLine(20,0,true);
     eat();
     walkTo(xLodestone,zLodestone-1);
     walkTo(xLodestone,zLodestone);
-    if (harvestedLevel==compactEveryLevel){
+    if (slotNeeded>countFreeSlot()){
+        Chat.log("compacting")
         compact(true);
-        harvestedLevel=0;
     } else {
         lodestoneUp(true);
     }
+    Client.waitTick(10); //The time for the coords to stabilize
 
 }
 
@@ -295,7 +322,6 @@ function goUp(){
         lodestoneUp(true);
         Client.waitTick(lagTick)
     }
-    Chat.log("Second walking")
     walkTo(xLodestone,zLodestone)
     while (p.getY()<=currentLevel) {
         lodestoneUp(true);
@@ -310,9 +336,9 @@ function compact(notFinished){ //Compact the farm. If finished is true, farm is 
     p.interact();
     walkTo(xFrontCompactor,zFrontCompactor);
     lookAtCenter(xChestCompactor,zChestCompactor);
-    Client.waitTick();
-    p.interact();
     Client.waitTick(lagTick);
+    p.interact();
+    Client.waitTick(2*lagTick);
     inv = Player.openInventory();
     const slots = inv.getSlots('main', 'hotbar', 'offhand');
     // Put the potatoes in the chest
@@ -361,7 +387,6 @@ function init(){ //Initialize the hotbar with tool in the first slot, food in th
     Client.grabMouse();
     equip(foodType,1);
     equip("minecraft:stick",2);
-    harvestedLevel=0;
 }
 
 function start(){
