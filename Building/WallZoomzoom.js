@@ -3,12 +3,11 @@
 // Hotbar is : 1st slot is building mat, 2nd slot is lodestone, 3rd slot is pickaxe
 
 //Only edit those two variable, the rest don't touch
-const wallLength = 20; //The length of the wall
-const wallHeight = 50;  //The height of the wall
-const refill = true;
+const wallHeight = 20;  //The height of the wall
+const refill = false;
 const reinforceMat = "minecraft:stone"
-const refillChestX = 1492;
-const refillChestZ = 26;
+const refillChestX = 1470;
+const refillChestZ = -159;
 const refillStacks = 5; //The amount of stacks for the building item and the reinforcing item
 const lagTick = 6;
 const speed = 0; //The value of your speed boost
@@ -23,6 +22,8 @@ var prevZ;
 var prevX;
 var startPoint;
 var endPoint;
+const startTime = Date.now();
+
 
 var dir; //0 if going from start to end, 1 if going from end to start
 
@@ -36,33 +37,32 @@ function equip(item,slot) { // Equip an item in a certain slot
     Client.waitTick(lagTick);
 }
 
-function initiateVar(){
-    if (refill) {
-        equip("minecraft:lodestone",1)
-        equip("minecraft:diamond_pickaxe",2);
+function lookAtCenter(x, z) {// Look at the center of a block
+    p.lookAt(x+0.5,p.getY(), z+0.5);
+}
+
+function walkSlowTo(x, z) { // Walk to the center of a block
+    lookAtCenter(x,z);
+    KeyBind.keyBind("key.sneak", true);
+    Client.waitTick();
+    KeyBind.keyBind("key.forward", true);
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.05){
+        lookAtCenter(x,z);//Correct the trajectory if needed
+        Time.sleep(10);
     }
-    if (wallDir==-180) {//Wall is going north
-        startPoint = Math.floor(p.getZ())
-        endPoint = startPoint -wallLength+1;
-    } else if (wallDir==-90) { //Wall is going east
-        startPoint = Math.floor(p.getX())
-        endPoint = startPoint + wallLength-1;
-    } else if (wallDir==0) {
-        startPoint = Math.floor(p.getZ())
-        endPoint = startPoint + wallLength-1;
-    } else if (wallDir==90) {
-        startPoint = Math.floor(p.getX())
-        endPoint = startPoint - wallLength+1;
-    } else {
-        throw("Problem with the faced direction")
-    }
+    KeyBind.keyBind("key.forward", false);
+    KeyBind.keyBind("key.sneak", false);    
+}
+
+function center(){
+    walkSlowTo(Math.floor(p.getX()),Math.floor(p.getZ()));
 }
 
 function checkMats() { //Return true if you have enough mats, false otherwise. Need enough to make 4 lines
     listOfMat = inv.getItemCount();
     buildMatNumber = listOfMat.get(buildMat);
     reinforceNumber = listOfMat.get(reinforceMat);
-    return ((buildMatNumber>(6*wallLength))&&(reinforceNumber>(6*wallLength)))
+    return ((buildMatNumber>7)&&(reinforceNumber>7))
 }
 
 function placeFill(i) { //Autofill the i slot
@@ -73,7 +73,6 @@ function placeFill(i) { //Autofill the i slot
     p.interact();
     Client.waitTick();
     if (needRestock) { //i slot empty
-        Chat.log("now refilling "+ item);
         list = inv.findItem(item);
         swapSlot = 0
         for (slot of list) {
@@ -131,33 +130,22 @@ function onPoint(value) { //Return true if you are on this point
     }
 }
 
-function needLine(length,originX,originZ) { //Return true if you need to continue the line, false otherwise
-    return (p.distanceTo(originX,p.getY(),originZ)<(length-1))
-}
-
-function line(length) {
-    originX = Math.floor(p.getX())+0.5;
-    originZ = Math.floor(p.getZ())+0.5;
-    p.lookAt(wallDir+dir*180,90);
+function line() {
     KeyBind.keyBind("key.sneak", true);
-    KeyBind.keyBind("key.back", true);
-    while (needLine(length,originX,originZ)){
-        prevX = p.getX();
-        prevZ = p.getZ();
-        Client.waitTick();
-        if ((prevX==p.getX())&&(prevZ==p.getZ())) {
-            placeFill(0);
-            placeFill(0);
-            placeFill(0);
-            KeyBind.keyBind("key.sneak", false);
-            Client.waitTick(5-speed)
-            KeyBind.keyBind("key.sneak", true);
-        }
-    }
-    KeyBind.keyBind("key.back", false);
-    KeyBind.keyBind("key.forward", true);
-    Client.waitTick(12-2*speed);
-    KeyBind.keyBind("key.forward", false);
+    p.lookAt(wallDir,17);
+    placeFill(0);
+    placeFill(0);
+    placeFill(0);
+    p.lookAt(wallDir,40);
+    placeFill(0)
+    p.lookAt(180+wallDir,17);
+    placeFill(0);
+    placeFill(0);
+    placeFill(0);
+    p.lookAt(180+wallDir,40);
+    placeFill(0)
+    jumpPlace(0);
+
 }
 
 function jumpPlace(i) {
@@ -217,25 +205,24 @@ function refillMat(){
     inv = Player.openInventory();
 }
 
+function init(){
+    if (refill) {
+        equip("minecraft:lodestone",1)
+        equip("minecraft:diamond_pickaxe",2);
+    }
+}
+
 function wall() {
-    initiateVar();
+    init();
     KeyBind.keyBind("key.sneak", true);
-    dir=1;
-    for (let i=3;i<wallHeight;i=i+3) {
-        jumpPlace(0);
-        jumpPlace(0);
-        jumpPlace(0);
-        line(wallLength);
-        dir=1-dir;
-        if ((dir==1)&&(!checkMats())) { //You are above the lodestone, and you need to refill
+    center();
+    for (let i=0;i<wallHeight;i++) {
+        line();
+        if (!checkMats()&&refill) { //You are above the lodestone, and you need to refill
             inv.setSelectedHotbarSlotIndex(1);
             Client.waitTick(20);
             KeyBind.keyBind("key.sneak", false);
-            p.lookAt(wallDir,90)
-            KeyBind.keyBind("key.jump", true);
-            Client.waitTick(3);
-            p.interact();
-            KeyBind.keyBind("key.jump", false);
+            jumpPlace(1)
             Client.waitTick(20);//Wait for you to fall from the jump
             lodestoneUp(false);
             refillMat();
@@ -244,8 +231,9 @@ function wall() {
             KeyBind.keyBind("key.sneak", true);
         }
     }
+    const farmTime = Math.floor((Date.now()-startTime)/1000);
+    Chat.say("Placed  "+wallHeight+" blocks in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
     KeyBind.keyBind("key.sneak", false);
-    Chat.log("Wall is finished")
-}
+t}
 
 wall();
