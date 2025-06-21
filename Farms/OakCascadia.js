@@ -1,14 +1,11 @@
 /*Script to harvest a tree farm, and replant. This version has lots of chat prompt for an easier debbuging, it'll ruin your chat history
-V1.7 by arthirob, 14/10/2024 
+V1.8 by arthirob, 21/06/2024 
 
-Conditions for the farm as as follow
-A compactor a placed in the north wall, with a lever on the furnace
-An odd number of row
-All tree with the same distance, all rows with the same distance. The distance to the first tree is the same as the distance to the other tree
-
-Things to improve
-Last layer, no saplings on lodestone tree
-Change level is fucked up
+How to set up the farm :
+Make sure the refill chests are filled with saplings and leaf tools.
+Take in your inventory :
+6 axes, 2 stacks of food, 12 stacks of saplings, 10 iron hoe. Don't forget to set up your food type.
+Start anywhere in the tree farm, on a spot where the bot should start (end of a row, or a dirt block), look in the direction you want to start 
 */
 
 
@@ -29,7 +26,7 @@ const firstTreeDist = 2;//The distance between the first tree and the edge of th
 const rowSpace = 5; //Space between rows
 const treeSpace = 4; //Space between trees in a row
 const woodType = "oak"
-const lagTick = 4; //Lag safeguard. Reduce to 4 or less with good connection
+const lagTick = 6; //Lag safeguard. Reduce to 4 or less with good connection
 const saplingChest = 20 ; //Have a chest full of saplings every this number of line
 const saplingStack = Math.floor((zSouth-zNorth)*saplingChest/(treeSpace*64))+2; //How many stack of sapling you need to run the farm
 const toolNeeded = 10; //The amout of hoes nedded between chest refill
@@ -43,8 +40,8 @@ const runningPause = 4;
 var breakTime;
 
 //Information to send the message in a discord relay
-const discordGroup = 'DoYourThing';
-const farmName = "NameYourThing"
+const discordGroup = 'FU-Bot';
+const farmName = "Cascadia Oak"
 const regrowTime = 24;
 
 //Variable of the script, no touching as well
@@ -299,7 +296,7 @@ function harvestLog(coord,axisX){ // When in front of a tree,cut 2 logs, walk fo
     p.lookAt(dir*180,90);
     Client.waitTick(lagTick);
     placeFill(1);
-    Client.waitTick(lagTick)
+    Client.waitTick(lagTick);
     plantedSapling+=1;
     if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
         toolCheck();
@@ -399,7 +396,7 @@ function farmMain(currentX,currentZ) { // Farm your current level
 
 function finishFarm(){
     const farmTime = Math.floor((Date.now()-startTime)/1000);
-    Chat.log("Farm is finished to harvest. Choped "+plantedSapling+" trees in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
+    Chat.say("/g "+discordGroup+" "+farmName+" is finished to harvest. Choped "+plantedSapling+" trees in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
     Chat.say("/logout")   
 }
 
