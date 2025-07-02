@@ -114,13 +114,12 @@ function lookAtCenter(x, z) {// Look at the center of a block
 function walkTo(x, z) { // Walk to the center of a block
     lookAtCenter(x,z);
     KeyBind.keyBind("key.forward", true);
-    while ((Math.abs(p.getX() - x - 0.5) > 0.2 || Math.abs(p.getZ() - z - 0.5 ) > 0.2)){
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.05){
         lookAtCenter(x,z);//Correct the trajectory if needed
         Time.sleep(10);
     }
     KeyBind.keyBind("key.forward", false);
-    Client.waitTick(3);
-    
+    Client.waitTick(3);    
 }
 
 function disableCtb() {
