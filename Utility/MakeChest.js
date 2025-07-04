@@ -1,7 +1,7 @@
 //This script allows to craft stacks of logs into chests. You need to be in front of a crafting bench for it to work, with enough inventory space
-const numberOfLog = 6; //The number of logs stacks you want to turn into chest
+const numberOfLog = 4; //The number of logs stacks you want to turn into chest
 const p = Player.getPlayer() ;
-const woodType = "oak"
+const woodTypes = ["spruce", "jungle", "oak"]; // Add all you want to craft
 const chestRecipe=[1,2,3,4,6,7,8,9]
 var inv = Player.openInventory();
 
@@ -10,20 +10,25 @@ var inv = Player.openInventory();
 if ((36-inv.getItems('main', 'hotbar', 'offhand').length-3*numberOfLog)<1) {//Each stacks of log is going to take 3 more spot when turned into planks
     throw("Not enough inventory space");
 }
-
 //Check if you have enough logs
-const logType = "minecraft:"+woodType+"_log";
+var woodType = woodTypes[0];
+var logType = "minecraft:"+woodType+"_log";
+var logTypes = [];
+for (let i = 0; i < woodTypes.length; i++) {
+	logTypes.push("minecraft:"+woodTypes[i]+"_log");
+}
+
 const itemMap = inv.getItemCount();
 var foundLog = false;
 for (const [key,value] of itemMap) {
-    if (key==logType) {
-        foundLog = true ;
+	if (logTypes.includes(key)) {
+		logType = key;
+		foundLog = true ;
         if (value<(64*numberOfLog)) {
             throw("You need at least "+numberOfLog+" stacks of logs. This value can be edited")
         }
-    }
+	}
 }
-
 if (!foundLog) {
     throw("You forgot to took any log !")
 }
@@ -51,16 +56,21 @@ for (let i=0;i<numberOfLog;i++) {
 Client.waitTick(5);
 // Get the list of full stacks of planks
 const plankType = "minecraft:"+woodType+"_planks";
+var plankTypes = [];
+for (let i = 0; i < woodTypes.length; i++) {
+	plankTypes.push("minecraft:"+woodTypes[i]+"_planks");
+}
+
 var plankList = [];
 const slots = inv.getSlots('main', 'hotbar', 'offhand');
 for (const slot of slots) {
     const item = inv.getSlot(slot);
-    if (item.getItemId() == plankType) {
+    //if (item.getItemId() == plankType) {
+	if (plankTypes.includes(item.getItemId())) {
         if (item.getCount()==64) {
             plankList.push(slot);
         }
-    };
-
+    }
 }
 
 //This shouldn't happen
@@ -78,5 +88,7 @@ for (let i=0;i<=((plankList.length/8)-1);i++) {
     inv.quick(0);
     Client.waitTick();
 }
+
 Client.waitTick(5);
-Player.openInventory().close();
+
+inv.close();
