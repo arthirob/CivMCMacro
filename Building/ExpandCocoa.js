@@ -5,6 +5,7 @@ const inv = Player.openInventory();
 const heightGoal = 300;
 const logType = "minecraft:jungle_log"
 const cocoaBean = "minecraft:cocoa_beans"
+const reinforceMat = "minecraft:stone"
 const treeX = Math.floor(p.getX());
 const treeZ = Math.floor(p.getZ());
 var currentY;
@@ -23,33 +24,29 @@ function jumpPlace() {
 }
 
 function placeFill(i) { //Autofill the i slot
-    item = inv.getSlot(36+i);
+    item = inv.getSlot(inv.getSlots('hotbar')[0]+i).getItemId();
+    needRestock = inv.getSlot(inv.getSlots('hotbar')[0]+i).getCount()<=2
     inv.setSelectedHotbarSlotIndex(i);
     Client.waitTick();
     p.interact();
     Client.waitTick();
-    if (inv.getSlot(36+i).getCount()==0) { //i slot empty
+    if (needRestock) { //i slot empty
         list = inv.findItem(item);
-        if (list.length==0) {
+        swapSlot = 0
+        for (slot of list) {
+            if (inv.getSlot(slot).getCount()>2) {
+                swapSlot = slot ; 
+            }
+        }
+        if (swapSlot==0) {
             KeyBind.keyBind("key.back", false);
-            KeyBind.keyBind("key.left", false);
-            KeyBind.keyBind("key.forward", true);
-            Client.waitTick(3);
-            KeyBind.keyBind("key.forward", false);
-            KeyBind.keyBind("key.sneak", false);
-            Chat.log("Out of materials")
             throw("No more mats")
         }
-        inv.swapHotbar(list[0],i);
-        Client.waitTick();
+        Chat.log("Found the item, in slot "+swapSlot);
+        inv.swapHotbar(swapSlot,i);
     }
-    if (inv.findItem("minecraft:stone").length==0){
+    if (inv.findItem(reinforceMat).length==0){
         KeyBind.keyBind("key.back", false);
-        KeyBind.keyBind("key.left", false);
-        KeyBind.keyBind("key.forward", true);
-        Client.waitTick(3);
-        KeyBind.keyBind("key.forward", false);
-        KeyBind.keyBind("key.sneak", false);
         throw("Out of stone");
     }
 }
@@ -62,7 +59,7 @@ function walkSlowTo(x, z) { // Walk to the center of a block
     lookAtCenter(x,z);
     KeyBind.keyBind("key.forward", true);
     KeyBind.keyBind("key.sneak", true);
-    while ((Math.abs(p.getX() - x - 0.5) > 0.1 || Math.abs(p.getZ() - z - 0.5 ) > 0.1)){
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.05){
         lookAtCenter(x,z);// Allow trajectory correction
         Client.waitTick();
     }
