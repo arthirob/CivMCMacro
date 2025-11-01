@@ -1,7 +1,7 @@
 # Training ground
 ## What is it ?
 The training ground is a concrete platform located in fempire (6000,-6900), to learn the different aspects of JSMacro. It was initially created by arthirob, and is meant for public access for anyone who wants to learn JSMacro.
-
+![The training ground](https://github.com/arthirob/CivMCMacro/blob/6acd4fd81434d9837842f0d5493f297de46533d5/Training/TrainingGroundPicture.png)
 ## How to use it ?
 You can just access it, and the list of challenges should be written in signs. Each challenge should help you learning a specific function. When nothing is written, you don't need bastion access, but you'll sometimes needs it.
 
