@@ -33,12 +33,13 @@ var line ; // The current line you are in
 var timeRemaining ; //The time remaining in the farm approximately
 var lineFinished; // The boolean to check if a line is finished
 var slots;
+var compactorOn = false; //Tells if the compactor is on or not
 
 //Misc declaration
 const discordGroup = 'FU-Bot';
 const farmName = "Blue vine farm next to portal"
 const regrowTime = 12;
-const lineCompact = 4; //The number of line you want to make before compating
+const lineCompact = 2; //The number of line you want to make before compating
 var currentCompact ; //Track how many line you did since last compact
 
 const timePerRow = ((xEast-xWest)/3) + 3 ; // Count the time to harvest a row and the wait ticks
@@ -133,13 +134,16 @@ function compact() { //Go to the compactor, put things in the chest and hit the 
         }
     }
     Player.openInventory().close();
-    Client.waitTick(lagTick);
-    lookAtCenter(xFurnaceCompactor,zFurnaceCompactor);
-    inv.setSelectedHotbarSlotIndex(8);
-    Client.waitTick(lagTick);
-    p.attack();
-    Client.waitTick(lagTick);
-    inv.setSelectedHotbarSlotIndex(0);
+    if (!compactorOn) {
+        Client.waitTick(lagTick);
+        lookAtCenter(xFurnaceCompactor,zFurnaceCompactor);
+        inv.setSelectedHotbarSlotIndex(8);
+        Client.waitTick(lagTick);
+        p.attack();
+        Client.waitTick(lagTick);
+        inv.setSelectedHotbarSlotIndex(0);
+        compactorOn  = true;
+    }
 }
 function farmMain() { // Main farming functions
     line = Math.floor(p.getZ());
