@@ -16,11 +16,11 @@ const im = Player.getInteractionManager();
 var inv = Player.openInventory();
 
 //What you should modify, your holes coordinate.
-const xWest = 968; // The X coordinate of your starting point
-const zSouth = 997; // The Z coordinate of your starting point
+const xWest = 6040; // The X coordinate of your starting point
+const zSouth = -6878; // The Z coordinate of your starting point
 const yStop = -50; // The y layer at which you want to stop
-const North = 7; // The number of block you want to dig to the north of the startpoint
-const East = 4; // The number of block you want to dig to the east of the startpoint
+const North = 8; // The number of block you want to dig to the north of the startpoint
+const East = 8; // The number of block you want to dig to the east of the startpoint
 const storeMats = false;
 
 const damageTreshhold=20; //The damage at which you want to stop using your tool
@@ -336,32 +336,11 @@ function mineLevel() { // Mine a full level
     KeyBind.keyBind("key.forward", false);
     if (storeMats){
         placeChest();
+    } else {
+        dumpBlock();
     }
     eat();
     inv.setSelectedHotbarSlotIndex(0);
-}
-
-function downLevel() { //Go down a level
-    walkTo(xWest+1,zSouth);
-    prevY = p.getY();
-    p.lookAt(xWest,p.getY()-1,zSouth);
-    KeyBind.keyBind("key.attack", true);
-    Client.waitTick(breakTime*2); //Multiply by 2, just in case it's a tougher block
-    KeyBind.keyBind("key.attack", false);
-    p.lookAt(90,0);
-    KeyBind.keyBind("key.forward", true);
-    KeyBind.keyBind("key.sneak", true);
-    do {
-        prevX = p.getX();
-        Client.waitTick()
-    } while (prevX!=p.getX())
-    KeyBind.keyBind("key.forward", false);
-    KeyBind.keyBind("key.sneak", false);
-    Client.waitTick(15);
-    placeTorch(xWest,zSouth);
-    if (prevY-1!=p.getY()) {
-        throw("You are at the wrong height")
-    }
 }
 
 function downLevel2() { //Go down a level
@@ -388,6 +367,7 @@ function downLevel2() { //Go down a level
         Client.waitTick(10);
     }
     walkTo(xWest,zSouth);
+    currentY = p.getY();
     p.lookAt(90,90);
     KeyBind.keyBind("key.attack", true);
     Client.waitTick(30);
@@ -399,7 +379,7 @@ function downLevel2() { //Go down a level
     Client.waitTick(10);
     inv.setSelectedHotbarSlotIndex(0);
     if (currentY-p.getY()!=2){
-        Chat.log("You failed the descentn trying again");
+        Chat.log("You failed the descent trying again");
         p.lookAt(-90,0);
         KeyBind.keyBind("key.forward", true);
         KeyBind.keyBind("key.jump", true);
@@ -435,7 +415,7 @@ function init(){
     equip("minecraft:torch",3);
     if (storeMats){
         equip("minecraft:chest",4);
-    }
+    } 
     equip("minecraft:gravel",5);
 }
 
