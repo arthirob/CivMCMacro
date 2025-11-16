@@ -302,7 +302,7 @@ function unstuck(x,z) { //If you are stuck, you are either hitting a block, or o
         inv.setSelectedHotbarSlotIndex(0);
     } else {
         Chat.log("Stuck in a front of a block")
-
+        lookAtBlock(x,z);
         KeyBind.keyBind("key.attack", true);
         Client.waitTick(breakTime*stuckHit);
         KeyBind.keyBind("key.attack", false);
@@ -364,7 +364,7 @@ function downLevel2() { //Go down a level
     while (gravelNumber!= inv.getSlot(41).getCount()){
         gravelNumber = inv.getSlot(41).getCount();
         placeFill(5);
-        Client.waitTick(10);
+        Client.waitTick(20);
     }
     walkTo(xWest,zSouth);
     currentY = p.getY();
