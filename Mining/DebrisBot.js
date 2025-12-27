@@ -1,13 +1,11 @@
 /*Script to dig a debris tunnel
-V1.0 by arthirob & Jaydon_, 23/12/2025 
+V1.1 by arthirob & Jaydon_, 27/12/2025 
 You need at least one stack of netherrack to start the script, and usable tools
 You need to have the script which triggers on event message
 
 Mssage on heart loss
 
 Things to improve
-
-
 */
 
 
@@ -22,13 +20,13 @@ const inv = Player.openInventory();
 const dir = ((Math.floor((p.getYaw() + 225) / 90))) % 4 - 2;; // -1 for east, 0 for south, 1 for west and -2 for north
 const rotationSpeed = 15;//The speed at which you turn. Lower will make you rotate faster, but loose more stone
 const discordGroup = '!';
-const damageTreshhold = 15; //The damage at which you want to stop using your tool
+const damageTreshhold = 25; //The damage at which you want to stop using your tool
 
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
-const toolType = "pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
+const toolType = "minecraft:diamond_pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
 const toDump = ["minecraft:basalt", "minecraft:netherrack", "minecraft:blackstone"]
 const messageOnPick = true; //Also sends a message when you are switching pick
-
+const alignAndEmpty = 5;//Empty your inv every this amount of block.
 
 // Don't touch those variables, they are used during the script to track execution
 GlobalVars.putInt("debris",0);
@@ -40,7 +38,10 @@ var stuck; //Check if you are stuck in a block
 var stuckHit = 0;// If you are stuck on a block you need to break, make the breaktime higher each try
 var inBasalt = false;
 var toolRemains = true;
+var fullHealth = true;
 var toolDura;
+var currentAlign;
+var remainingTools;
 const breakTime = 1;
 const solidBlock = "minecraft:netherrack"
 const startTime = Date.now();
@@ -52,6 +53,21 @@ function equip(item, slot) { // Equip an item in a certain slot
     }
     inv.swapHotbar(list[0], slot);
     Client.waitTick();
+}
+
+function eat() {
+    if (p.getFoodLevel()<16) {
+        if (inv.getSlot(38).getItemId()!=foodType) {
+            equip(foodType,2);
+        }
+        inv.setSelectedHotbarSlotIndex(2);
+        KeyBind.keyBind("key.use", true);
+        do {
+            Client.waitTick();
+        } while (p.getFoodLevel()<16)
+        inv.setSelectedHotbarSlotIndex(0);
+        KeyBind.keyBind("key.use", false);
+    }
 }
 
 function placeFill(i) { //Autofill the i slot
@@ -94,12 +110,14 @@ function walkTo(x, z, sneak) { // Walk to the center of a block
 }
 
 function pickSwitch() { //Function to switch to the lowest durability pickaxe still usable
-    toolList = inv.findItem("minecraft:diamond_pickaxe")
+    toolList = inv.findItem(toolType)
     var usableSlot = 0;
+    remainingTools = 0;
     lowestToolDamage = 10000;
     for (i = 0; i < toolList.length; i++) { // This needs to be correct as well, it's not really efficient to check all tools
         currentToolDamage = inv.getSlot(toolList[i]).getMaxDamage() - inv.getSlot(toolList[i]).getDamage()
         if (currentToolDamage >= damageTreshhold) { // The tool has health remaining and doesn't have silktouch
+            remainingTools++;
             if (currentToolDamage < lowestToolDamage) {
                 usableSlot = toolList[i];
                 lowestToolDamage = currentToolDamage;
@@ -117,9 +135,16 @@ function pickSwitch() { //Function to switch to the lowest durability pickaxe st
     inv.swapHotbar(usableSlot, 0);
 }
 
-function toolCheck() { // Check if your tool can be used, and if not, switch it
-    if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
-        pickSwitch();
+function toolCheck() { // Check if your tool can be used, and if not, switch it, but keep some dura on your last pick
+    if (remainingTools>=2) { //You have more than 2 tools remaining, use it until the end
+        if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold) {
+           pickSwitch();
+        }
+    } else {
+        if ((inv.getSlot(36).getMaxDamage()-inv.getSlot(36).getDamage())<damageTreshhold*inv.findItem(toolType).length) {
+            toolRemains = false ;
+            Chat.say("/g " + discordGroup + " You are out of tools")
+        }
     }
 }
 
@@ -156,7 +181,7 @@ function mineAWall() { //Mine a wall and set the basalt variable to true if you 
         Client.waitTick(3);
         KeyBind.keyBind("key.pickItem", false);
         Client.waitTick();
-        if (inv.getSelectedHotbarSlotIndex() != 1) { //You are not in netherrack !!!
+        if ((inv.getSelectedHotbarSlotIndex() != 1)||(inv.getSlot(37).getItemID!=solidBlock)) { //You are not in netherrack !!!
             Chat.log("You are not in netherrack")
             inBasalt = true;
             Chat.say("/g " + discordGroup + " You are not in netherrack anymore")
@@ -217,7 +242,7 @@ function unstuck() { //If you are stuck, you are either hitting a block, or on t
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(0);
     } else {
-        p.lookAt(dir * 90, 35);
+        p.lookAt(dir * 90, 14);
         im.attack(); //Try to hit a quick punch
         Client.waitTick();
         prevX = p.getX();
@@ -227,15 +252,21 @@ function unstuck() { //If you are stuck, you are either hitting a block, or on t
         KeyBind.keyBind("key.forward", false); //Move forward a bit. If you didn't move, the block is harder
         if (p.distanceTo(prevX, p.getY(), prevZ) < 0.1) {
             Chat.log("You bumped into an hard block")
-            p.lookAt(dir * 90, 35);
+            p.lookAt(dir * 90, 14);
             KeyBind.keyBind("key.attack", true);
-            Client.waitTick(40);
+            Client.waitTick(50);
             KeyBind.keyBind("key.attack", false);
         }
     }
     KeyBind.keyBind("key.forward", true);
 }
 
+function checkHealth(){
+    if (p.getHealth()!=20) {
+        fullHealth = false;
+        Chat.say("/g " + discordGroup + " You took damage")
+    }
+}
 
 function walkForward() {
     KeyBind.keyBind("key.sneak", true);
@@ -251,7 +282,7 @@ function walkForward() {
     Client.waitTick(10  );
     KeyBind.keyBind("key.attack", false);
     Client.waitTick();
-    while (p.distanceTo(originX, p.getY(), originZ) < 0.99) {
+    while (p.distanceTo(originX, p.getY(), originZ) < 0.9) {
         prevZ = p.getZ();
         prevX = p.getX();
         Client.waitTick(2);
@@ -266,7 +297,6 @@ function walkForward() {
     }
     KeyBind.keyBind("key.forward", false);
     Client.waitTick();
-    placePerfect();
 }
 
 function placePerfect() {
@@ -279,6 +309,7 @@ function init() {
     pickSwitch();
     inv.setSelectedHotbarSlotIndex(0);
     equip(solidBlock, 1);// Put the solid block in the second slot
+    currentAlign = 0;
 }
 
 function finishBot(){
@@ -289,12 +320,22 @@ function finishBot(){
 
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
     init();
-    while ((!inBasalt) && toolRemains) {
+    while ((!inBasalt) && toolRemains && fullHealth) {
         mineAWall();
         toolCheck();
         walkForward();
-        dumpBlock();    
+        eat();
+        checkHealth();
+        if (currentAlign>=alignAndEmpty) {
+            placePerfect();
+            dumpBlock();
+            currentAlign = 0 ;
+        } else {
+            currentAlign ++;
+        }
+  
     }
+    finishBot();
 }
 
 start();
