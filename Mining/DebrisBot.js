@@ -27,9 +27,13 @@ const toolType = "minecraft:diamond_pickaxe"; // Can be "shovel" or "pickaxe" de
 const toDump = ["minecraft:basalt", "minecraft:netherrack", "minecraft:blackstone"]
 const messageOnPick = true; //Also sends a message when you are switching pick
 const alignAndEmpty = 5;//Empty your inv every this amount of block.
+const rackSwitch = true; //Stop when you are outside of a netherrack trench
 
 // Don't touch those variables, they are used during the script to track execution
 GlobalVars.putInt("debris",0);
+const steps = 10;
+const coeff = makeArray(steps);
+const sleepTime = 10;
 var currentX; //X at the start of the script
 var currentZ; //Y at the start of the script
 var prevX; //Allows to check if X changed
@@ -45,6 +49,43 @@ var remainingTools;
 const breakTime = 1;
 const solidBlock = "minecraft:netherrack"
 const startTime = Date.now();
+
+//Smooth looking stuff, no touchin !
+function binomial(n, k) {
+    if ((typeof n !== 'number') || (typeof k !== 'number')) 
+ return false; 
+   var coeff = 1;
+   for (var x = n-k+1; x <= n; x++) coeff *= x;
+   for (x = 1; x <= k; x++) coeff /= x;
+   return coeff;
+}
+
+function makeArray(size){
+    var coefficient = Array(size);
+    for (let i=0;i<size;i++) {
+        coefficient[i] = binomial(size-1,i)/(2**(size-1)) ;
+    }
+    return coefficient
+}
+
+function softLook(yawGoal,pitchGoal) {
+    currentYaw=p.getYaw();
+    difYaw = yawGoal - currentYaw ;
+    if (difYaw>180) {
+        difYaw-=360;
+    }
+    if (difYaw<-180) {
+        difYaw+=360;
+    }
+    currentPitch = p.getPitch();
+    difPitch = pitchGoal - currentPitch;
+    for (let i=0;i<steps;i++) {
+        currentYaw+=difYaw*coeff[i];
+        currentPitch += difPitch*coeff[i];
+        p.lookAt(currentYaw,currentPitch);
+        Time.sleep(sleepTime);
+    }
+}
 
 function equip(item, slot) { // Equip an item in a certain slot
     list = inv.findItem(item);
@@ -149,7 +190,7 @@ function toolCheck() { // Check if your tool can be used, and if not, switch it,
 }
 
 function dumpBlock() { //Throw the useless blocks behind you
-    p.lookAt(90 * (dir + 2), 0);
+    softLook(90 * (dir + 2), 0);
     Client.waitTick(3);
     for (let i = 9; i < 35; i++) {
         if (toDump.includes(inv.getSlot(i).getItemId())) {
@@ -157,7 +198,7 @@ function dumpBlock() { //Throw the useless blocks behind you
             Client.waitTick();
         }
     }
-    p.lookAt(90 * dir, 0);
+    softLook(90 * dir, 0);
 }
 
 function mineAWall() { //Mine a wall and set the basalt variable to true if you are hitting basalt
@@ -174,23 +215,25 @@ function mineAWall() { //Mine a wall and set the basalt variable to true if you 
     }
 
     KeyBind.keyBind("key.attack", false);
-    if ((inv.getSlot(36).getDamage() - toolDura) < 10) { //Your item dura didn't change
-        p.lookAt(0, 90);//Look at your feet
-        Client.waitTick();
-        KeyBind.keyBind("key.pickItem", true);
-        Client.waitTick(3);
-        KeyBind.keyBind("key.pickItem", false);
-        Client.waitTick(3);
-            if ((inv.getSelectedHotbarSlotIndex() != 1)||(inv.getSlot(37).getItemId()!=solidBlock)) { //You are not in netherrack !!!
-            Chat.log("selected slot is"+inv.getSelectedHotbarSlotIndex());
-            Chat.log("ID block is ")
-            Chat.log("You are not in netherrack")
-            inBasalt = true;
-            Chat.say("/g " + discordGroup + " You are not in netherrack anymore")
-        }
-        inv.setSelectedHotbarSlotIndex(0);
-        Client.waitTick();
+    if (rackSwitch) {
+        if ((inv.getSlot(36).getDamage() - toolDura) < 10) { //Your item dura didn't change
+            softLook(0, 90);//Look at your feet
+            Client.waitTick();
+            KeyBind.keyBind("key.pickItem", true);
+            Client.waitTick(3);
+            KeyBind.keyBind("key.pickItem", false);
+            Client.waitTick(3);
+                if ((inv.getSelectedHotbarSlotIndex() != 1)||(inv.getSlot(37).getItemId()!=solidBlock)) { //You are not in netherrack !!!
+                Chat.log("selected slot is"+inv.getSelectedHotbarSlotIndex());
+                Chat.log("ID block is ")
+                Chat.log("You are not in netherrack")
+                inBasalt = true;
+                Chat.say("/g " + discordGroup + " You are not in netherrack anymore")
+            }
+            inv.setSelectedHotbarSlotIndex(0);
+            Client.waitTick();
 
+        }
     }
 }
 
@@ -235,16 +278,16 @@ function stuckType() { // Tell if you are bumping on a block or stuck on the edg
 function unstuck() { //If you are stuck, you are either hitting a block, or on the edge of a block
     KeyBind.keyBind("key.forward", false);
     if (stuckType() == "hole") {
-        p.lookAt((dir - 2) * 90, 80);
+        softLook((dir - 2) * 90, 80);
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(1);
         Client.waitTick();
         placeFill(1);
-        p.lookAt(dir * 90, 0);
+        softLook(dir * 90, 0);
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(0);
     } else {
-        p.lookAt(dir * 90, 14);
+        softLook(dir * 90, 14);
         im.attack(); //Try to hit a quick punch
         Client.waitTick();
         prevX = p.getX();
@@ -254,7 +297,7 @@ function unstuck() { //If you are stuck, you are either hitting a block, or on t
         KeyBind.keyBind("key.forward", false); //Move forward a bit. If you didn't move, the block is harder
         if (p.distanceTo(prevX, p.getY(), prevZ) < 0.1) {
             Chat.log("You bumped into an hard block")
-            p.lookAt(dir * 90, 14);
+            softLook(dir * 90, 14);
             KeyBind.keyBind("key.attack", true);
             Client.waitTick(50);
             KeyBind.keyBind("key.attack", false);
@@ -273,10 +316,10 @@ function checkHealth(){
 function walkForward() {
     KeyBind.keyBind("key.sneak", true);
 
-    p.lookAt(dir * 90, 14);
+    softLook(dir * 90, 14);
     Client.waitTick();
-    originX = p.getX();
-    originZ = p.getZ();
+    originX = Math.floor(p.getX())+0.5;
+    originZ = Math.floor(p.getZ())+0.5;
     prevX = originX;
     prevZ = originZ;
     KeyBind.keyBind("key.forward", true);
@@ -303,7 +346,7 @@ function walkForward() {
 
 function placePerfect() {
     walkTo(Math.floor(p.getX()), Math.floor(p.getZ()), true);
-    p.lookAt(dir*90, 0);
+    softLook(dir*90, 0);
 }
 
 function init() {
@@ -331,7 +374,7 @@ function start() { //Allows to start back where you were. Finish the row, and pl
         if (currentAlign>=alignAndEmpty) {
             placePerfect();
             dumpBlock();
-            currentAlign = 0 ;
+            currentAlign = 1 ;
         } else {
             currentAlign ++;
         }
