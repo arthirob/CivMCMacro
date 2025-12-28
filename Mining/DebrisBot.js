@@ -71,7 +71,7 @@ function eat() {
 }
 
 function placeFill(i) { //Autofill the i slot
-    item = inv.getSlot(36 + i).getItemID();
+    item = inv.getSlot(36 + i).getItemId();
     inv.setSelectedHotbarSlotIndex(i);
     Client.waitTick();
     p.interact();
@@ -152,7 +152,7 @@ function dumpBlock() { //Throw the useless blocks behind you
     p.lookAt(90 * (dir + 2), 0);
     Client.waitTick(3);
     for (let i = 9; i < 35; i++) {
-        if (toDump.includes(inv.getSlot(i).getItemID())) {
+        if (toDump.includes(inv.getSlot(i).getItemId())) {
             inv.dropSlot(i, true)
             Client.waitTick();
         }
@@ -180,8 +180,10 @@ function mineAWall() { //Mine a wall and set the basalt variable to true if you 
         KeyBind.keyBind("key.pickItem", true);
         Client.waitTick(3);
         KeyBind.keyBind("key.pickItem", false);
-        Client.waitTick();
-        if ((inv.getSelectedHotbarSlotIndex() != 1)||(inv.getSlot(37).getItemID!=solidBlock)) { //You are not in netherrack !!!
+        Client.waitTick(3);
+            if ((inv.getSelectedHotbarSlotIndex() != 1)||(inv.getSlot(37).getItemId()!=solidBlock)) { //You are not in netherrack !!!
+            Chat.log("selected slot is"+inv.getSelectedHotbarSlotIndex());
+            Chat.log("ID block is ")
             Chat.log("You are not in netherrack")
             inBasalt = true;
             Chat.say("/g " + discordGroup + " You are not in netherrack anymore")
