@@ -19,21 +19,22 @@ const inv = Player.openInventory();
 //What you should modify, your holes coordinate.
 const dir = ((Math.floor((p.getYaw() + 225) / 90))) % 4 - 2;; // -1 for east, 0 for south, 1 for west and -2 for north
 const rotationSpeed = 15;//The speed at which you turn. Lower will make you rotate faster, but loose more stone
-const discordGroup = '!';
+const discordGroup = 'FU-Bot';
 const damageTreshhold = 25; //The damage at which you want to stop using your tool
-
+const abortKey = "o";
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const toolType = "minecraft:diamond_pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
 const toDump = ["minecraft:basalt", "minecraft:netherrack", "minecraft:blackstone"]
-const messageOnPick = true; //Also sends a message when you are switching pick
+const messageOnPick = false; //Also sends a message when you are switching pick
 const alignAndEmpty = 5;//Empty your inv every this amount of block.
-const rackSwitch = true; //Stop when you are outside of a netherrack trench
+const rackSwitch = false; //Stop when you are outside of a netherrack trench
 
 // Don't touch those variables, they are used during the script to track execution
 GlobalVars.putInt("debris",0);
+var shouldTerminate = false;
 const steps = 10;
-const coeff = makeArray(steps);
 const sleepTime = 10;
+const coeff = makeArray(steps);
 var currentX; //X at the start of the script
 var currentZ; //Y at the start of the script
 var prevX; //Allows to check if X changed
@@ -95,6 +96,14 @@ function equip(item, slot) { // Equip an item in a certain slot
     inv.swapHotbar(list[0], slot);
     Client.waitTick();
 }
+
+function checkManualAbort() { // Function to check if the abort key is pressed
+    if (KeyBind.getPressedKeys().contains("key.keyboard." + abortKey)) {
+        shouldTerminate = true
+        Chat.log(" Player has pressed abort key ('" + abortKey.toUpperCase() + "'). Terminating script now")
+    }
+}
+
 
 function eat() {
     if (p.getFoodLevel()<16) {
@@ -365,12 +374,13 @@ function finishBot(){
 
 function start() { //Allows to start back where you were. Finish the row, and place yourself at the start of the new row
     init();
-    while ((!inBasalt) && toolRemains && fullHealth) {
+    while ((!inBasalt) && toolRemains && fullHealth && (!shouldTerminate)) {
         mineAWall();
         toolCheck();
         walkForward();
         eat();
         checkHealth();
+        checkManualAbort();
         if (currentAlign>=alignAndEmpty) {
             placePerfect();
             dumpBlock();
