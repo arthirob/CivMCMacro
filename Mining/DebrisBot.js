@@ -16,10 +16,11 @@ const p = Player.getPlayer();
 const im = Player.getInteractionManager();
 const inv = Player.openInventory();
 
-//What you should modify, your holes coordinate.
+//What you should modify
 const dir = ((Math.floor((p.getYaw() + 225) / 90))) % 4 - 2;; // -1 for east, 0 for south, 1 for west and -2 for north
 const rotationSpeed = 15;//The speed at which you turn. Lower will make you rotate faster, but loose more stone
 const discordGroup = 'FU-Bot';
+const discordId = 246680603100053504;
 const damageTreshhold = 25; //The damage at which you want to stop using your tool
 const abortKey = "o";
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
@@ -318,7 +319,7 @@ function unstuck() { //If you are stuck, you are either hitting a block, or on t
 function checkHealth(){
     if (p.getHealth()!=20) {
         fullHealth = false;
-        Chat.say("/g " + discordGroup + " You took damage")
+        Chat.say(`/g ${discordGroup} <@${discordId}> Watch out ! You took damage`)
     }
 }
 
