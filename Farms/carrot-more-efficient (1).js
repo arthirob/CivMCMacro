@@ -96,8 +96,8 @@ function farmLine() { // Farm a line
     lineFinished = false;
     pitch = 90;
     
-    const tapDuration = 4; // Ticks to hold the key down (Press duration)
-    const tapWait = 5;     // Ticks to wait after releasing the key (Idle duration)
+    const tapDuration = 5; // Ticks to hold the key down (Press duration)
+    const tapWait = 4;     // Ticks to wait after releasing the key (Idle duration)
     
 
     while (!lineFinished && !shouldTerminate) { // check shouldTerminate
@@ -233,7 +233,7 @@ function start(){
         if (!shouldTerminate) { // Only finish if the script completed all rows
             finishFarm();
         } else {
-            // If aborted, keep the player active
+            
             Chat.log("Script aborted by user. Please manually check player position and items.");
         }
      }else {
