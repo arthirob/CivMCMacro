@@ -75,7 +75,7 @@ function equipTool() { // Function to equip a tool with the fortune effect
     let i = 9;
     while ((i < 45)&&(!foundTool)){
         if (inv.getSlot(i).hasEnchantment("fortune")) {
-            // Note: If slot is null or enchantment is incorrectly cased ("Fortune" vs "fortune"), this line may throw a Null error.
+            
             if (inv.getSlot(i).getEnchantment("Fortune").getLevel()==3) {
                 inv.swapHotbar(i,0);
                 foundTool=true;
