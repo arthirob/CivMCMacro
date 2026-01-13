@@ -63,7 +63,7 @@ function walkTo(x, z) { // Walk to the center of a block
     
 }
 
-function equipTool() { // Function to equip a tool with the fortune effect
+function equipTool() { // Function to equip a tool with the fortune effect.
     var foundTool = false;
     let i = 9;
     while ((i < 45)&&(!foundTool)){
