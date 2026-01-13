@@ -106,8 +106,8 @@ function farmLine() { // Farm a line
     lineFinished = false;
     pitch = 90;
     
-    const tapDuration = 4; // Ticks to hold the key down (Press duration)
-    const tapWait = 5;     // Ticks to wait after releasing the key (Idle duration)
+    const tapDuration = 5; // Ticks to hold the key down (Press duration)
+    const tapWait = 4;     // Ticks to wait after releasing the key (Idle duration)
 
     while (!lineFinished && !shouldTerminate) { 
         Client.waitTick();
