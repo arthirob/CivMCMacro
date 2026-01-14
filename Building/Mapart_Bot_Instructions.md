@@ -1,5 +1,5 @@
-
-# What does it do ?
+# Mapart Bot Instructions and Info
+## What does it do ?
 
 Patrols Canvas: The script automatically moves your player back and forth across a set area (defined by X and Z coordinates) to keep the Litematica printer running.
 
