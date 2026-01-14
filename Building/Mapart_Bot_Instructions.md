@@ -34,3 +34,5 @@ Reduce printing mode range to 2 or 1 blocks(can be more for maparts with less sh
 
 
 it uses arthirobs potato farm as its base
+
+This script is 100% LEGAL.
