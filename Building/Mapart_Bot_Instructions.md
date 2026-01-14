@@ -21,7 +21,7 @@ Reduce printing mode range to 2 or 1 blocks(can be more for maparts with less sh
 ‐-------------------------------‐-----------------------------
 
 
-● Put 4 chests stacked on top of each other near any border of the farm full of all 16 shades of carpets.
+● Put 4 chests stacked on top of each other near any border of the farm full of all 16 shades of carpets. can change the shades of carpet in the chest according to the mapart for example can have all 4 chests full of black carpet if the mapartbis all black.
 
 ● If your mapart uses less than 2 stacks of a shade remove it from carpet list in the script and have that amount of carpet of that shade in your inventory.
 
