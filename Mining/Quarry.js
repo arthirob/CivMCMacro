@@ -16,9 +16,9 @@ const im = Player.getInteractionManager();
 var inv = Player.openInventory();
 
 //What you should modify, your holes coordinate.
-const xWest = 6040; // The X coordinate of your starting point
-const zSouth = -6878; // The Z coordinate of your starting point
-const yStop = -50; // The y layer at which you want to stop
+const xWest = -199; // The X coordinate of your starting point
+const zSouth = -116; // The Z coordinate of your starting point
+const yStop = -64; // The y layer at which you want to stop
 const North = 8; // The number of block you want to dig to the north of the startpoint
 const East = 8; // The number of block you want to dig to the east of the startpoint
 const storeMats = false;
@@ -95,9 +95,13 @@ function lookAtBlock(x, z) {// Look at the center of a block
 
 function placeTorch(x,z){ // Place a torch if it follows the torch grid
     if (((x-xWest)%torchGridX==0)&&((z-zSouth)%torchGridZ==0)) {
+        KeyBind.keyBind("key.attack", false);
+
         p.lookAt(x+0.5,p.getY(),z+0.5);
         placeFill(3);
         inv.setSelectedHotbarSlotIndex(0);  
+        KeyBind.keyBind("key.attack", true);
+
     }
 }
 
@@ -264,13 +268,14 @@ function mineOne(x,z) { // Mine the block at this z value and walk to it
     KeyBind.keyBind("key.sneak", true);
     stuck = 0 // Check if we are stuck on the edge of a block
     stuckHit = 1; // Reinitialize the stuckHit counter
-    while ((Math.abs(p.getZ()-0.5-z)>0.2)||(Math.abs(p.getX()-0.5-x)>0.2)) {
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.2) {
+        lookAtBlock(x,z);
         prevZ = p.getZ();
         prevX = p.getX();
-        Client.waitTick()
-        if ((Math.abs(p.getZ()-prevZ)<0.05)&&((Math.abs(p.getX()-prevX)<0.05))){ // You are almost not moving
+        Client.waitTick();
+        if (p.distanceTo(prevX,p.getY(),prevZ)<0.05){ // You are almost not moving
             stuck++;
-            if (stuck==5) {
+            if (stuck==10) {
                 unstuck(x,z);
                 stuckHit++;
                 stuck = 0;
@@ -300,13 +305,16 @@ function unstuck(x,z) { //If you are stuck, you are either hitting a block, or o
         p.lookAt(dir*180,35);
         Client.waitTick();
         inv.setSelectedHotbarSlotIndex(0);
+        
     } else {
         Chat.log("Stuck in a front of a block")
+        
         lookAtBlock(x,z);
         KeyBind.keyBind("key.attack", true);
         Client.waitTick(breakTime*stuckHit);
         KeyBind.keyBind("key.attack", false);
         Client.waitTick(3);
+        
     }
     KeyBind.keyBind("key.forward", true);
 }
