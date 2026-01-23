@@ -1,5 +1,5 @@
 /*Script to farm stone with stone pick on a stone generator
-V1.1 by arthirob, 23/01/2025 
+V1.2 by arthirob, 23/01/2025 
 
 Press 9 to abort the script, have log on your 9th slot
 */
@@ -32,6 +32,7 @@ const zFurnace = -6308;
 const lagTick = 6;//Adapt to your configuration
 var aborted = false;
 var breakTime;
+var emptyAgain;
 var latestEmpty//The last empty chest
 var startedOnce = false;//Allows to start the factory once you used 16 picks
 
@@ -276,6 +277,7 @@ function findEmpty(){//Find the first empty chest on the side
 }
 
 function emptyOutput(){
+    emptyAgain = false; //By default, don't empty the chest again
     p.lookAt(xOutputChest+0.5,p.getY()-1,zOutputChest+0.5);
     Client.waitTick(lagTick);
     im.interact();
@@ -301,7 +303,12 @@ function emptyOutput(){
         for (const slot of slots) {
             if (inv.getSlot(slot).getItemId()=="minecraft:stone") {
                 inv.quick(slot);
-                Client.waitTick();
+                Time.sleep(10); 
+            }
+        }
+        for (const slot of slots) {
+            if (inv.getSlot(slot).getItemId()=="minecraft:stone") {
+                emptyAgain = true;
             }
         }
         inv.close();
@@ -313,13 +320,15 @@ function emptyOutput(){
             if (latestEmpty[0]==3) {
                 latestEmpty[0]=0;
                 latestEmpty[1]=latestEmpty[1]+1;
-                emptyOutput();
             }
             if (latestEmpty[1]==6){
                 throw("Out  of room")
             }
         }
-
+    }
+    if (emptyAgain) {
+        Chat.log("Emptying again")
+        emptyOutput();
     }
 }
 
