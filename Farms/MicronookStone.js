@@ -1,5 +1,5 @@
 /*Script to farm stone with stone pick on a stone generator
-V1.0 by arthirob, 21/06/2024 
+V1.1 by arthirob, 23/01/2025 
 
 Press 9 to abort the script, have log on your 9th slot
 */
@@ -30,15 +30,14 @@ const xFurnace = 6425;
 const zFurnace = -6308;
 
 const lagTick = 6;//Adapt to your configuration
-const aborted = false;
+var aborted = false;
 var breakTime;
 var latestEmpty//The last empty chest
 var startedOnce = false;//Allows to start the factory once you used 16 picks
 
 //Information to send the message in a discord relay
 const discordGroup = 'FU-Bot';
-const farmName = "Cascadia Oak"
-const regrowTime = 24;
+const farmName = "Stone farm"
 
 //Variable of the script, no touching as well
 const startTime = Date.now();
@@ -162,7 +161,7 @@ function craftPick(){
 
 function keepGoing(){ //Check if you need to continue, and equip a fresh pick if needed
     if (KeyBind.getPressedKeys().contains("key.keyboard.9")) {
-        aborted = false;
+        aborted = true;
         Chat.log("Aborting the script")
         return false
     } else if (inv.findItem("minecraft:stone_pickaxe").length ==0 ) {
@@ -282,13 +281,18 @@ function emptyOutput(){
     im.interact();
     Client.waitTick(lagTick);
     inv = Player.openInventory();
-    inv.quickAll(inv.findItem("minecraft:stone")[0]);
-    Client.waitTick(lagTick);
+    slots = inv.getSlots('container');
+    for (slot of slots) {
+        if(inv.getSlot(slot).getItemId()=="minecraft:stone"){
+            inv.quick(slot);
+            Time.sleep(10); 
+        }
+    }
     inv.close();
     Client.waitTick(lagTick);
     inv = Player.openInventory();
     while (inv.findItem("minecraft:stone").length!=0) {
-        p.lookAt(xStoringChest+0.9-(latestEmpty[1]*0.95),p.getY()+latestEmpty[0]+0.7,zStoringChest+1); //The 0.95 allows to look slightly more to edge of the chest each column
+        p.lookAt(xStoringChest+0.5+(latestEmpty[1]*0.85),p.getY()+latestEmpty[0]+0.7,zStoringChest); //The 0.95 allows to look slightly more to edge of the chest each column
         Client.waitTick()
         im.interact();
         Client.waitTick(lagTick);
@@ -309,6 +313,7 @@ function emptyOutput(){
             if (latestEmpty[0]==3) {
                 latestEmpty[0]=0;
                 latestEmpty[1]=latestEmpty[1]+1;
+                emptyOutput();
             }
             if (latestEmpty[1]==6){
                 throw("Out  of room")
@@ -320,14 +325,19 @@ function emptyOutput(){
 
 function finishFarm(){
     const farmTime = Math.floor((Date.now()-startTime)/1000);
-    Chat.say("/g "+discordGroup+" "+farmName+" is finished to harvest. Choped "+plantedSapling+" trees in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
+    Chat.say("/g "+discordGroup+" "+farmName+" is stopping. You stopped mining stone ! You did it for "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. Now logging out")
     Chat.say("/logout")   
 }
 
 function start() {
     place();
     latestEmpty = findEmpty();
-    farmStone();
+    emptyOutput();
+    if (inv.findItem("minecraft:stone_pickaxe").length!=0) {//You have stone remaining
+        farmStone();
+    } else {
+        craftPick();
+    }
 }
 
 start();
