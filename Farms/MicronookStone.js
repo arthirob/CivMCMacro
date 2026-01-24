@@ -22,6 +22,7 @@ const zOutputChest = -6308;
 const pickCobbleRecipe=[1,2,3]
 const pickStickRecipe=[5,8]
 const logType = "oak"
+const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const xStoringChest = 6423; //The chest where you store the stone
 const zStoringChest = -6306;
 const xStickChest = 6425; //The chest where you store the stick and logs
@@ -65,6 +66,26 @@ function walkTo(x, z) { // Walk to the center of a block
     }
     KeyBind.keyBind("key.forward", false);
     Client.waitTick(3);    
+}
+
+function eat() {
+    if (p.getFoodLevel()<16) {
+        KeyBind.keyBind("key.attack", false);
+        Client.waitTick(lagTick)
+        const foodList = inv.findItem(foodType);
+        if (foodList.length==0) {
+            throw("Out of food")
+        }
+        inv.swapHotbar(foodList[0],2);
+        KeyBind.keyBind("key.use", true);
+        inv.setSelectedHotbarSlotIndex(2);
+        do {
+            Client.waitTick(10);
+        } while (p.getFoodLevel()<16)
+        KeyBind.keyBind("key.attack", true);
+        Client.waitTick(lagTick)
+        inv.setSelectedHotbarSlotIndex(0);
+    }
 }
 
 function emptyCobble(){ // Empty your cobble in the currently opened chest
@@ -206,6 +227,7 @@ function farmStone(){
     inv.setSelectedHotbarSlotIndex(0);
     KeyBind.keyBind("key.attack", true);
     while (keepGoing()) {
+        eat();
         Client.waitTick(10);
     }
     KeyBind.keyBind("key.attack", false);
@@ -290,6 +312,11 @@ function emptyOutput(){
             Time.sleep(10); 
         }
     }
+    for (const slot of slots) {
+        if (inv.getSlot(slot).getItemId()=="minecraft:stone") {
+            emptyAgain = true;
+        }
+    }
     inv.close();
     Client.waitTick(lagTick);
     inv = Player.openInventory();
@@ -306,11 +333,7 @@ function emptyOutput(){
                 Time.sleep(10); 
             }
         }
-        for (const slot of slots) {
-            if (inv.getSlot(slot).getItemId()=="minecraft:stone") {
-                emptyAgain = true;
-            }
-        }
+
         inv.close();
         Client.waitTick(lagTick);
         inv = Player.openInventory();
@@ -342,7 +365,11 @@ function start() {
     place();
     latestEmpty = findEmpty();
     emptyOutput();
+    startFactory();
     if (inv.findItem("minecraft:stone_pickaxe").length!=0) {//You have stone remaining
+        if (inv.findItem("minecraft:stone_pickaxe").length<=16) {
+            startedOnce = true;
+        }
         farmStone();
     } else {
         craftPick();
