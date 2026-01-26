@@ -3,14 +3,16 @@
 
 
 //Only edit those five variable, the rest don't touch
-const floorSide = -1; //1 if you want your floor on the right, -1 for on the left
-const floorLength = 5; //Your floor length
-const floorWidth = 4; // Your floor width
-const placeLight = true; //If set to true, place torches
+const floorSide = 1; //1 if you want your floor on the right, -1 for on the left
+const floorLength = 15; //Your floor length
+const floorWidth = 6; // Your floor width
+const placeLight = false; //If set to true, place torches
 const torchGridX = 6; //The x distance between your torches
 const torchGridZ = 6; //The z distance between your torches
-const speed = 1; //1 if you have speed 1, 0 if you have speed 0
+const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 const playSound = true;
+const reinforceMat = "minecraft:stone"
+
 
 //NO TOUCH AFTER THIS POINT
 const p = Player.getPlayer() ;
@@ -58,14 +60,21 @@ function placeTorch(x,z){ // Place a torch if it follows the torch grid
 
 
 function placeFill(i) { //Autofill the i slot
-    item = inv.getSlot(36+i).getItemID();
+    item = inv.getSlot(inv.getSlots('hotbar')[0]+i).getItemId();
+    needRestock = inv.getSlot(inv.getSlots('hotbar')[0]+i).getCount()<=2
     inv.setSelectedHotbarSlotIndex(i);
+    Client.waitTick();
     p.interact();
     Client.waitTick();
-    if (inv.getSlot(36+i).getCount()==0) { //i slot empty
+    if (needRestock) { //i slot empty
         list = inv.findItem(item);
-        Chat.log(list.length);
-        if (list.length==0) {
+        swapSlot = 0
+        for (slot of list) {
+            if (inv.getSlot(slot).getCount()>2) {
+                swapSlot = slot ; 
+            }
+        }
+        if (swapSlot==0) {
             KeyBind.keyBind("key.back", false);
             KeyBind.keyBind("key.left", false);
             KeyBind.keyBind("key.forward", true);
@@ -75,10 +84,10 @@ function placeFill(i) { //Autofill the i slot
             Chat.log("Out of materials")
             throw("No more "+item);
         }
-        inv.swapHotbar(list[0],i);
-        Client.waitTick();
+        Chat.log("Found the item, in slot "+swapSlot);
+        inv.swapHotbar(swapSlot,i);
     }
-    if (inv.findItem("minecraft:stone").length==0){
+    if (inv.findItem(reinforceMat).length==0){
         KeyBind.keyBind("key.back", false);
         KeyBind.keyBind("key.left", false);
         KeyBind.keyBind("key.forward", true);
@@ -90,7 +99,7 @@ function placeFill(i) { //Autofill the i slot
 }
 
 function needLine(length,originX,originZ) { //Return true if you need to continue the line, false otherwise
-    return (p.distanceTo(originX,p.getY(),originZ)<length)
+    return (p.distanceTo(originX,p.getY(),originZ)<(length-1))
 }
 
 function line(length) {
@@ -104,18 +113,18 @@ function line(length) {
         prevX = p.getX();
         prevZ = p.getZ();
         Client.waitTick();
-        if ((prevX==p.getX())&&(prevZ==p.getZ())) {
+        if (p.distanceTo(prevX,p.getY(),prevZ)==0) {
             placeFill(0);
-            KeyBind.keyBind("key.sneak", false);
-            Client.waitTick(5-speed)
-            KeyBind.keyBind("key.sneak", true);
-            placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+            if ((length-1-p.distanceTo(originX,p.getY(),originZ))>1) {
+                KeyBind.keyBind("key.sneak", false); 
+                Client.waitTick(5-speed)
+                KeyBind.keyBind("key.sneak", true);
+                placeTorch(Math.floor(p.getX()),Math.floor(p.getZ()));
+            }
+
         }
     }
     KeyBind.keyBind("key.back", false);
-    KeyBind.keyBind("key.forward", true);
-    Client.waitTick(12-2*speed);
-    KeyBind.keyBind("key.forward", false);
 }
 
 function turn(leftOrRight){ //Turn in a direction. -1 for left, 1 for right

@@ -4,14 +4,15 @@
 
 //Only edit those five variable, the rest don't touch
 var floorSide = 1; //1 if you want your floor on the right, -1 for on the left
-const length = 19 ; //Your floor length Long = 29, med = 26, short = 19
-const width = 7; // Your floor width
+const length = 10 ; //Your floor length Long = 29, med = 26, short = 19
+const width = 5; // Your floor width
 const placeLight = false; //If set to true, place torches
 const torchGridX = 6; //The x distance between your torches
 const torchGridZ = 6; //The z distance between your torches
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 const playSound = true;
 const reinforceMat = "minecraft:stone"
+const sneakWhenFilling = true;//Allow you to sneak when you fill the U shape, to place block such as trapdoors
 
 
 //NO TOUCH AFTER THIS POINT
@@ -99,6 +100,20 @@ function needLine(length,originX,originZ) { //Return true if you need to continu
     return (p.distanceTo(originX,p.getY(),originZ)<(length-1))
 }
 
+function lookAtEdge(dir){
+    currentX = Math.floor(p.getX());
+    currentZ = Math.floor(p.getZ());
+    if (dir==-90) {
+        p.lookAt(currentX+1,p.getY()-0.1,p.getZ())
+    } else if (dir==0) {
+        p.lookAt(p.getX(),p.getY()-0.1,currentZ+1)
+    } else if (dir==90) {
+        p.lookAt(currentX,p.getY()-0.1,p.getZ())
+    } else { 
+        p.lookAt(p.getX(),p.getY()-0.1,currentZ)
+    }
+}
+
 function line(length) {
     originX = Math.floor(p.getX())+0.5;
     originZ = Math.floor(p.getZ())+0.5;
@@ -111,6 +126,7 @@ function line(length) {
         prevZ = p.getZ();
         Client.waitTick();
         if (p.distanceTo(prevX,p.getY(),prevZ)==0) {
+            lookAtEdge(dir)
             placeFill(0);
             if ((length-1-p.distanceTo(originX,p.getY(),originZ))>1) {
                 KeyBind.keyBind("key.sneak", false); 
@@ -165,13 +181,13 @@ function floor(length,width,floorSide){//Make a floor of a certain length and wi
 
 function blockToPlace(i,width,dir){ //Make you look where you should place
     if (dir==-180) { //You are facing north
-        p.lookAt(Math.floor(p.getX())+0.5,p.getY()-0.5,Math.floor(p.getZ())-(width-3)+i)
+        p.lookAt(Math.floor(p.getX())+0.5,p.getY()-0.1,Math.floor(p.getZ())-(width-3)+i)
     } else if (dir==-90){
-        p.lookAt(Math.floor(p.getX())+(width-2)-i,p.getY()-0.5,Math.floor(p.getZ())+0.5)
+        p.lookAt(Math.floor(p.getX())+(width-2)-i,p.getY()-0.1,Math.floor(p.getZ())+0.5)
     } else if (dir==0){
-        p.lookAt(Math.floor(p.getX())+0.5,p.getY()-0.5,Math.floor(p.getZ())+(width-2)-i)
+        p.lookAt(Math.floor(p.getX())+0.5,p.getY()-0.1,Math.floor(p.getZ())+(width-2)-i)
     } else {
-        p.lookAt(Math.floor(p.getX())-(width-3)+i,p.getY()-0.5,Math.floor(p.getZ())+0.5)
+        p.lookAt(Math.floor(p.getX())-(width-3)+i,p.getY()-0.1,Math.floor(p.getZ())+0.5)
     }
 }
 
@@ -194,9 +210,13 @@ function fillFloor(length,width,floorSide){ //Fill a U shape holl
     }
     KeyBind.keyBind("key.forward", false);
     Client.waitTick()
-    KeyBind.keyBind("key.sneak", false);
     currentX = p.getX();
     currentZ = p.getZ();
+    if (!sneakWhenFilling){
+        KeyBind.keyBind("key.sneak", false);
+        Client.waitTick(5);//Take time to get up
+
+    }
     for (let i=0;i<(length-1);i++){
         fillLine(width);
         p.lookAt(dir,50);
@@ -213,6 +233,8 @@ function fillFloor(length,width,floorSide){ //Fill a U shape holl
         KeyBind.keyBind("key.right", false);
         KeyBind.keyBind("key.left", false);
     }
+    KeyBind.keyBind("key.sneak", false);
+
 }
 
 function floor6(length,width,floorSide){ //Makes a floor from a single block using the U technique. You start from the angle of the floor
@@ -282,4 +304,4 @@ function fullfloor(length,width,floorSide){
     }
 }
 
-fullfloor(length,width,floorSide)
+fullfloor(length,width,floorSide);

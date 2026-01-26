@@ -7,13 +7,13 @@
 //Only edit those five variable, the rest don't touch
 
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
-const xEast = 6055 ;
-const xWest = 6049;
-const zNorth = -6487;
-const zSouth = -6481;
+const xEast = -453 ;
+const xWest = -459;
+const zNorth = -448;
+const zSouth = 454;
 const ladderX = [6050,6052];
 const ladderZ = [-6484,-6486]
-const lagTick = 5;
+const lagTick = 5;  
 
 
 //NO TOUCH AFTER THIS POINT
