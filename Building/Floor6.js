@@ -4,8 +4,8 @@
 
 //Only edit those five variable, the rest don't touch
 var floorSide = 1; //1 if you want your floor on the right, -1 for on the left
-const length = 17; //Your floor length
-const width = 6; // Your floor width
+const length = 19 ; //Your floor length Long = 29, med = 26, short = 19
+const width = 7; // Your floor width
 const placeLight = false; //If set to true, place torches
 const torchGridX = 6; //The x distance between your torches
 const torchGridZ = 6; //The z distance between your torches
@@ -78,12 +78,9 @@ function placeFill(i) { //Autofill the i slot
             }
         }
         if (swapSlot==0) {
+            KeyBind.keyBind("key.sneak", true);
             KeyBind.keyBind("key.back", false);
-            KeyBind.keyBind("key.left", false);
-            KeyBind.keyBind("key.forward", true);
-            Client.waitTick(3);
             KeyBind.keyBind("key.forward", false);
-            KeyBind.keyBind("key.sneak", false);
             Chat.log("Out of materials")
             throw("No more "+item);
         }
@@ -91,12 +88,9 @@ function placeFill(i) { //Autofill the i slot
         inv.swapHotbar(swapSlot,i);
     }
     if (inv.findItem(reinforceMat).length==0){
-        KeyBind.keyBind("key.back", false);
-        KeyBind.keyBind("key.left", false);
-        KeyBind.keyBind("key.forward", true);
-        Client.waitTick(3);
-        KeyBind.keyBind("key.forward", false);
-        KeyBind.keyBind("key.sneak", false);
+            KeyBind.keyBind("key.sneak", true);
+            KeyBind.keyBind("key.back", false);
+            KeyBind.keyBind("key.forward", false);
         throw("Out of stone");
     }
 }
