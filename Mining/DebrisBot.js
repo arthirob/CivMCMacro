@@ -1,11 +1,13 @@
 /*Script to dig a debris tunnel
-V1.1 by arthirob & Jaydon_, 27/12/2025 
-You need at least one stack of netherrack to start the script, and usable tools
-You need to have the script which triggers on event message
+V1.2 by arthirob & Jaydon_, 30/01/2026 
 
-Mssage on heart loss
+READ THIS DESCRIPTION
 
-Things to improve
+You need at least one stack of netherrack to start the script, and usable tools. It'll automatically fetch tools as they break
+It won't pick tools that aren't efficiency.
+TO GET THE COUNT, YOU NEED THE DEBRIS COUNT SCRIPT ON THE MSGRECEIVED EVENT
+
+Option can be customized. Don't forget to change your discord group
 */
 
 
@@ -16,23 +18,33 @@ const p = Player.getPlayer();
 const im = Player.getInteractionManager();
 const inv = Player.openInventory();
 
-//What you should modify
-const dir = ((Math.floor((p.getYaw() + 225) / 90))) % 4 - 2;; // -1 for east, 0 for south, 1 for west and -2 for north
+//What you can modify
 const rotationSpeed = 15;//The speed at which you turn. Lower will make you rotate faster, but loose more stone
-const discordGroup = 'FU-Bot';
+const discordGroup = '!';
 const discordId = 246680603100053504;
 const damageTreshhold = 25; //The damage at which you want to stop using your tool
 const abortKey = "o";
 const foodType = "minecraft:baked_potato"; // Change the food to be whatever you prefer to use !
 const toolType = "minecraft:diamond_pickaxe"; // Can be "shovel" or "pickaxe" depending on what you dig
 const toDump = ["minecraft:basalt", "minecraft:netherrack", "minecraft:blackstone"]
-const messageOnPick = false; //Also sends a message when you are switching pick
 const alignAndEmpty = 5;//Empty your inv every this amount of block.
-const rackSwitch = false; //Stop when you are outside of a netherrack trench
+
+//The different options
+const messageOnPick = false; //Also sends a message when you are switching pick
+const rackSwitch = false; //Stop the bot when you are mining other block than netherrack
+const messageOnDebris = true; //Sends a message when you find a debris
+const stopOnDebris = false;// Make a pause when you hit a debris
+const debrisPause = 8; //The amount of second you want to stop when finding a debris
+const debrisSound = true; //Play a sound when you find a debris
+const writeToFile = true; //Write the coords of the debris to a file
 
 // Don't touch those variables, they are used during the script to track execution
+const dir = ((Math.floor((p.getYaw() + 225) / 90))) % 4 - 2; // -1 for east, 0 for south, 1 for west and -2 for north
 GlobalVars.putInt("debris",0);
+var oldDebrisFound=0;
 var shouldTerminate = false;
+    const logFilePath = "debrisPos.txt";
+    const fileHandler = FS.open(logFilePath, "UTF-8"); // Open the file with UTF-8 encoding
 const steps = 10;
 const sleepTime = 10;
 const coeff = makeArray(steps);
@@ -92,7 +104,7 @@ function softLook(yawGoal,pitchGoal) {
 function equip(item, slot) { // Equip an item in a certain slot
     list = inv.findItem(item);
     if (list.length == 0) {
-        throw ("No more mats")
+        throw ("No more "+item)
     }
     inv.swapHotbar(list[0], slot);
     Client.waitTick();
@@ -167,7 +179,7 @@ function pickSwitch() { //Function to switch to the lowest durability pickaxe st
     lowestToolDamage = 10000;
     for (i = 0; i < toolList.length; i++) { // This needs to be correct as well, it's not really efficient to check all tools
         currentToolDamage = inv.getSlot(toolList[i]).getMaxDamage() - inv.getSlot(toolList[i]).getDamage()
-        if (currentToolDamage >= damageTreshhold) { // The tool has health remaining and doesn't have silktouch
+        if ((currentToolDamage >= damageTreshhold)&&(inv.getSlot(toolList[i]).hasEnchantment("efficiency"))){ // The tool has health remaining
             remainingTools++;
             if (currentToolDamage < lowestToolDamage) {
                 usableSlot = toolList[i];
@@ -367,6 +379,25 @@ function init() {
     currentAlign = 0;
 }
 
+function checkDebris(){
+    if (oldDebrisFound!=GlobalVars.getInt("debris")) {
+        if (debrisSound) {
+            World.playSound("entity.iron_golem.death", 100, 0);
+        }
+        if (messageOnDebris){
+            Chat.say("/g "+discordGroup+" You found a debris");
+        }
+        if (stopOnDebris) {
+            Client.waitTick(20*debrisPause)
+        }
+        if (writeToFile){
+            message = `Debris n° ${GlobalVars.getInt("debris")} found near ${Math.floor(p.getX())}, ${Math.floor(p.getZ())} \n`
+            fileHandler.append(message); // Append the text followed by a newline
+        }
+    }
+    oldDebrisFound = GlobalVars.getInt("debris");
+}
+
 function finishBot(){
     const farmTime = Math.floor((Date.now()-startTime)/1000);
     Chat.say("/g "+discordGroup+" Your debris bot is finished in "+(Math.floor(farmTime/60))+" minutes and "+(farmTime%60)+" seconds. You harvested "+ GlobalVars.getInt("debris") +" debris. Now logging out") 
@@ -377,6 +408,7 @@ function start() { //Allows to start back where you were. Finish the row, and pl
     init();
     while ((!inBasalt) && toolRemains && fullHealth && (!shouldTerminate)) {
         mineAWall();
+        checkDebris();
         toolCheck();
         walkForward();
         eat();
