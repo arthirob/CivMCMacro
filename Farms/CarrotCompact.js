@@ -1,8 +1,10 @@
 /*
-Script to harvest a square potato field, and compact the result. You might need to adjust const and compactor placement to be able to use it.
-V1.3 by arthirob 21/07/2024
+Script to harvest a square potato field, and compact the result.
+V2.0 by arthirob and wandrum 24/03/2026
 
-Things to improve
+This one harvest sideway to make sure no crop is lost. By default, it starts from the south west corner, and move to the east.
+To start from north to south first, you just need to change the dir variable line 36
+To start from east to west, you need to edit the pitch function to look the other way, farmLine to decrease, farmMain correction on row number, and farmMain end condition
 */
 
 // Constant and variable declaration
@@ -31,11 +33,16 @@ const discordGroup = 'FU-Bot';
 const farmName = "Carrot farm south of Moscow"
 const regrowTime = 32;
 const pitchGoal = 13    ; //The pitch you want to reach
+const angle = 20; //The angle you want to harvest
+const shift = -0.8; //How far you want to stay from the middle of the row
+var dir = 0 ;//The direction you are starting from. 1 for north, 0 for south. Edit here to change the start value
 const lineCompact = 6; //The number of line you want to make before compating
+
+//NO TOUCHING BEYOND THIS POINT
 var currentCompact ; //Track how many line you did since last compact
 
-var dir = 0 ;//The direction you are going. 1 for north, 0 for south. Edit here to change the start value
 var row ; // The current row you are in
+var justStarted;
 var timeRemaining ; //The time remaining in the farm approximately
 var lineFinished; // The boolean to check if a line is finished
 
@@ -50,7 +57,7 @@ function lookAtCenter(x, z) {// Look at the center of a block
 function walkTo(x, z) { // Walk to the center of a block
     lookAtCenter(x,z);
     KeyBind.keyBind("key.forward", true);
-    while ((Math.abs(p.getX() - x - 0.5) > 0.2 || Math.abs(p.getZ() - z - 0.5 ) > 0.2)){
+    while (p.distanceTo(x+0.5,p.getY(),z+0.5)>0.05){
         lookAtCenter(x,z);// Allow trajectory correction
         Client.waitTick();
     }
@@ -76,7 +83,7 @@ function equipTool() { // Function to equip a tool with the fortune effect
     }
 }
 
-function equiStick() {
+function equipStick() {
     listStick = inv.findItem("minecraft:stick");
     if (listStick.length==0) {
         throw("Have a stick in our inventory")
@@ -88,32 +95,54 @@ function correctPitch(pitch,pitchGoal){
     pitch += (pitchGoal - pitch) / 10
     Client.waitTick();
     p.interact();
-    p.lookAt(dir*180, pitch);
+    if (Math.abs(pitch - pitchGoal)>10){
+        p.lookAt(dir*180-angle*(1-2*dir)-pitch*(1-2*dir), pitch); //Add the angle and a correction on the first crop
+    } else {
+        p.lookAt(dir*180-angle*(1-2*dir), pitch); //Add the angle and a correction based on the current pitch
+    }
     return pitch
 }
 
 function farmLine() { // Farm a line
-    walkTo(row, zSouth*dir+zNorth*(1-dir));
+    walkTo(row+shift, zSouth*dir+zNorth*(1-dir)); //
     lineFinished=false;
     pitch = 90
+    justStarted = true;
     while (!lineFinished ) {
-        Client.waitTick();
         p.interact();
+        Client.waitTick();
+
         while (Math.abs(pitch - pitchGoal)>5 ) { //Wait until you are at almost the pitch
             pitch = correctPitch(pitch,pitchGoal);
         }
-        pitch = correctPitch(pitch,pitchGoal);
-        KeyBind.keyBind("key.forward", true);
+        KeyBind.keyBind("key.forward", true); //You to move forward a bit if you just started
+        if (justStarted){
+            Client.waitTick(3);
+            justStarted = false;
+        }
+        if (p.distanceTo(row+0.5+shift,p.getY(),p.getZ())>0.2){ //If you move sideway too much, go back to the middle
+            if (dir==1){ //You are going north, so you need to go more to the left
+                KeyBind.keyBind("key.left", true);
+            } else {
+                KeyBind.keyBind("key.right", true);
+            }
+        
+        } else {
+            KeyBind.keyBind("key.right", false);
+            KeyBind.keyBind("key.left", false);
+        }
         if (dir==1) {
-            if ((Math.floor(p.getZ()) < zNorth + 4)) {
+            if ((Math.floor(p.getZ()) < zNorth + 3)) {
                 lineFinished=true;
             }
         } else {
-            if ((Math.floor(p.getZ()) > zSouth - 4 )) {
+            if ((Math.floor(p.getZ()) > zSouth - 3 )) {
                 lineFinished=true;
             }
         }
     }
+    KeyBind.keyBind("key.right", false);
+    KeyBind.keyBind("key.left", false);
     KeyBind.keyBind("key.forward", false);
     Client.waitTick(lagTick);
 }
@@ -160,7 +189,7 @@ function compact() { //Go to the compactor, put things in the chest and hit the 
     inv.setSelectedHotbarSlotIndex(0);
 }
 function farmMain() { // Main farming functions
-    row = Math.floor(p.getX());
+    row = Math.floor(p.getX()-1);
     if (row != xWest) {
         Chat.log("Resuming at "+ (row-xWest)+"th row")
     }
@@ -186,7 +215,7 @@ function start(){
     //First check the position
     if ((xWest<=currentX)&&(currentX<=xEast)&&(zNorth<=currentZ)&&(currentZ<=zSouth)) { // Check if you are inside the farm
         equipTool();
-        equiStick();
+        equipStick();
         farmMain();
         finishFarm();
      }else {
