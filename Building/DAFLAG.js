@@ -1,5 +1,5 @@
 // Script to make a FREAKING GIANT TRANS FLAG
-// For a micronook project.
+// For a Apollo project.
 
 //The script build a long stripe with a full inv from west to east.
 //To use it, make sure the refill chest are filled with materials, and that 2 hoppers are feeding them more materials. This way, you'd be able to do more.
@@ -20,21 +20,21 @@ It's ok if S is more to the south than the refill chest, you'll just have to wal
 
 // You should just edit the first part : your current color, and where do you refill
 //Refill chests
-const xStanding = 8;
-const zStanding = 102; 
-const xBlockChest =9;
-const zBlockChest = 102;
-const xReinforceChest = 9;
-const zReinforceChest = 100;
+const xStanding = -1601;
+const zStanding = -3034; 
+const xBlockChest =-1600;
+const zBlockChest = -3034;
+const xReinforceChest = -1600;
+const zReinforceChest = -3036;
 const currentColor = "minecraft:pink_wool"
 const reinforceMat = "minecraft:stone"
 
-const lagTick = 5;
+const lagTick = 10;
 const numberOfRefill = 10; //The number of full inv you want to place. It'll make 5 block wide stripe
 
 //No touching behind this point this ! Math was done ! :p
 const floorSide = 1; //1 if you want your floor on the right, -1 for on the left
-const length = 210 ; //Your floor length
+const length = 225 ; //Your floor length
 const width = 5; // Your floor width
 const speed = 0; //1 if you have speed 1, 0 if you have speed 0
 const sneakWhenFilling = false;//Allow you to sneak when you fill the U shape, to place block such as trapdoors
@@ -243,24 +243,18 @@ function floor5(length,width,floorSide){ //Make a floor using the L technique, s
 
 function refill(item,xChest,zChest){ //Empty your inv and refill with exactly 17 stacks of each
     walkTo(xStanding,zStanding);
-    lookAtCenter(xChest,zChest); //Open the chest
+    inv = Player.openInventory();
+    blockAmount = Math.floor(inv.getItemCount().get(item)/64);
+    Client.waitTick(lagTick)
+    p.lookAt(xChest+0.5,p.getY()-0.5,zChest+0.5); //Open the chest
     Client.waitTick(lagTick);
     p.interact();
     Client.waitTick(lagTick);
     inv = Player.openInventory();
-    //First, empty your inv to make sure nothing remains in there
-    slots = inv.getSlots('main','hotbar');
-    for (const slot of slots){
-        if (inv.getSlot(slot).getItemId()==item) {
-            inv.quick(slot);
-        }
-    }
     slots = inv.getSlots('container');
-    blockAmount = 0;
     for (const slot of slots) {
         const currentItem = inv.getSlot(slot);
-        Chat.log(currentItem.getItemId()==item);
-        if ((currentItem.getItemId() == item)&&(blockAmount<17)&&(currentItem.getCount()==64)) {
+        if ((currentItem.getItemId() == item)&&(blockAmount<18)) {
             inv.quick(slot);
             Client.waitTick();
             blockAmount++;
@@ -283,11 +277,11 @@ function refillBoth(){
 
 function buildFlag(){ //Build the flag from north to south, and east to west, starting on the block you are on
     for (let i=1;i<=numberOfRefill;i++){
-        refillBoth();
         Chat.log(startX); 
         walkTo(startX,startZ+i*5);
         p.lookAt(90,0);
         floor5(length,width,floorSide);
+        refillBoth();
     }
     
 
